@@ -1,0 +1,175 @@
+.map-dashboard{
+  position:absolute;
+  top:120px;
+  right:20px;
+
+  width:400px;
+  height:55vh;
+
+  background:linear-gradient(180deg,#020617,#0f172a);
+
+  border-radius:18px;
+  padding:20px;
+
+  border:1px solid rgba(56,189,248,.2);
+
+  box-shadow:
+    0 0 25px rgba(0,0,0,.6),
+    inset 0 0 20px rgba(56,189,248,.08);
+
+  z-index:1000;
+
+  overflow-y:auto;
+}
+
+/* title */
+
+.dash-title{
+  font-size:20px;
+  font-weight:700;
+  color:#f8fafc;
+
+  text-align:center;
+
+  margin-bottom:15px;
+}
+
+/* stats */
+
+.dash-stats{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.stat-card{
+  flex:1;
+
+  background:#020617;
+
+  border:1px solid rgba(56,189,248,.2);
+
+  border-radius:10px;
+
+  padding:10px;
+
+  text-align:center;
+}
+
+.stat-card span{
+  display:block;
+  font-size:16px;
+  color:#e2e3e6;
+}
+
+.stat-card b{
+  font-size:20px;
+  color:#38bdf8;
+}
+
+/* search */
+
+.dash-search input{
+  width:100%;
+
+  background:#020617;
+
+  border:1px solid rgba(56,189,248,.3);
+
+  padding:8px 10px;
+
+  border-radius:8px;
+
+  color:white;
+
+  margin-bottom:15px;
+}
+
+/* category */
+
+.dash-category{
+  display:flex;
+  justify-content:space-between;
+
+  margin-bottom:15px;
+}
+
+.cat-item{
+  font-size:16px;
+  text-align:center;
+  color: #e2e3e6;
+}
+
+.cat-item b{
+  display:block;
+  font-size:16px;
+}
+
+.green b{color:#22c55e}
+.yellow b{color:#facc15}
+.red b{color:#ef4444}
+
+/* directions */
+
+.dash-directions h4{
+  color:#94a3b8;
+  font-size:16px;
+  margin-bottom:12px;
+}
+
+.direction-list{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+}
+
+.direction-list button{
+
+  background:#020617;
+
+  border:1px solid rgba(56,189,248,.25);
+
+  color:#e2e8f0;
+
+  padding:6px;
+
+  border-radius:6px;
+
+  font-size:15px;
+
+  cursor:pointer;
+
+  transition:.2s;
+}
+
+.direction-list button:hover{
+  background:#38bdf8;
+  color:black;
+}
+
+.dash-filter{
+  margin-bottom:15px;
+}
+
+.dash-filter label{
+  font-size:15px;
+  color:#94a3b8;
+  display:block;
+  margin-bottom:4px;
+}
+
+.dash-filter select{
+
+  width:100%;
+
+  background:#020617;
+
+  border:1px solid rgba(56,189,248,.25);
+
+  color:white;
+
+  padding:8px;
+
+  border-radius:8px;
+
+}

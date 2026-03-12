@@ -1,0 +1,69 @@
+.leaflet-interactive {
+  transition: fill-opacity 0.3s ease, stroke-width 0.3s ease;
+}
+
+.leaflet-interactive {
+  transition: all 0.25s ease;
+}
+
+.leaflet-interactive:hover {
+  filter: brightness(1.15);
+}
+
+.leaflet-interactive{
+  transition: all .25s ease;
+}
+
+.leaflet-left{
+   left: 20px !important;
+}
+
+.leaflet-top{
+  top: 140px !important;
+}
+
+.add-work-btn{
+  position: absolute;
+  top: 150px;      /* headerdan pastroqda */
+  left: 90px;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.marker-wrapper{
+  position:relative;
+}
+
+.marker-icon{
+  width:32px;
+}
+
+.marker-count{
+
+  position:absolute;
+  top:-6px;
+  right:-10px;
+
+  background:#ef4444;
+
+  color:white;
+
+  font-size:12px;
+  font-weight:bold;
+
+  width:20px;
+  height:20px;
+
+  border-radius:50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  box-shadow:0 0 6px rgba(0,0,0,.5);
+
+}
+
+.leaflet-container .leaflet-marker-pane img {
+    width: 45px !important;
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Gulzor mahalla",
+    "lat": 41.37574151035173,
+    "lng": 69.14243003818957,
+    "description": "Toshkent tumani Gulzor mahallasi",
+    "population": 4200,
+    "category": "low",
+      "works": 3
+  },
+  {
+    "id": 2,
+    "name": "Bog'bon mahalla",
+    "lat": 41.42351783019042,
+    "lng": 69.20897997598375,
+    "description": "Bog'bon mahallasi haqida ma'lumot",
+    "population": 3100,
+    "category": "medium",
+      "works": 4
+  },
+  {
+    "id": 3,
+    "name": "Gulzor mahalla",
+    "lat": 41.41065842994321,
+    "lng": 69.33064796041728,
+    "description": "Toshkent tumani Gulzor mahallasi",
+    "population": 4200,
+    "category": "high",
+      "works": 0
+  }
+]

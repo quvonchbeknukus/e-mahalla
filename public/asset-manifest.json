@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.2c10f9cb.css",
+    "main.js": "/static/js/main.82eabde5.js",
+    "static/media/toshkent_tumani.png": "/static/media/toshkent_tumani.332b2358e862b46a0676.png",
+    "index.html": "/index.html",
+    "main.2c10f9cb.css.map": "/static/css/main.2c10f9cb.css.map",
+    "main.82eabde5.js.map": "/static/js/main.82eabde5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2c10f9cb.css",
+    "static/js/main.82eabde5.js"
+  ]
+}
