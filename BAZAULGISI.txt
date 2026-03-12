@@ -1,0 +1,35 @@
+users{
+    id,
+    name,
+    last_name,
+    phone,
+    role,
+    password
+}
+neighborhoods{
+    id,
+    name,
+    crime_level,
+    lat,
+    long,
+    neighborhood_chairman,
+    neighborhood_phone,
+    prevention_inspector,
+    inspector_phone
+}
+direction{
+    id,
+    name
+}
+tasks{
+    id,
+    neighborhood_id,
+    direction_id,
+    date,
+    text
+}
+task_images{
+    id,
+    path,
+    task_id
+}
