@@ -2,63 +2,68 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Models\Neighborhood;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
-class NeighborhoodController
+class NeighborhoodController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json([
+            'data' => Neighborhood::query()->latest()->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request): JsonResponse
     {
-        //
+        $neighborhood = Neighborhood::create($this->validatedData($request));
+
+        return response()->json([
+            'data' => $neighborhood,
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show(Neighborhood $neighborhood): JsonResponse
     {
-        //
+        return response()->json([
+            'data' => $neighborhood,
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Neighborhood $neighborhood): JsonResponse
     {
-        //
+        $neighborhood->update($this->validatedData($request, true));
+
+        return response()->json([
+            'data' => $neighborhood->fresh(),
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(Neighborhood $neighborhood): JsonResponse
     {
-        //
+        $neighborhood->delete();
+
+        return response()->json([
+            'message' => 'Neighborhood deleted successfully.',
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    private function validatedData(Request $request, bool $isUpdate = false): array
     {
-        //
-    }
+        $required = $isUpdate ? 'sometimes' : 'required';
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return $request->validate([
+            'name' => [$required, 'string', 'max:100'],
+            'crime_level' => [$required, 'string', Rule::in(['yuqori', "o'rta", 'past', 'bosh'])],
+            'lat' => [$required, 'numeric'],
+            'long' => [$required, 'numeric'],
+            'neighborhood_chairman' => [$required, 'string', 'max:100'],
+            'neighborhood_phone' => [$required, 'string', 'max:100'],
+            'prevention_inspector' => [$required, 'string', 'max:100'],
+            'inspector_phone' => [$required, 'string', 'max:100'],
+        ]);
     }
 }

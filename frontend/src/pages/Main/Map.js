@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, GeoJSON, Marker } from "react-leaflet";
 import { Button } from "reactstrap";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import L from "leaflet";
 import districts from "../../data/tumanlar.json";
 import mahallalar from "../../data/mahallalar.json";
@@ -8,6 +8,8 @@ import MapHeader from "../../components/MapHeader/MapHeader";
 import MapDashboard from "../../components/MapDashboard/MapDashboard";
 import WorkModal from "../../components/WorkModal/WorkModal";
 import MahallaModal from "../../components/MahallaModal/MahallaModal";
+import LoginModal from "../../components/LoginModal/LoginModal";
+import { isAuthenticated } from "../../utils/auth";
 import "./style.css";
 
 function Map() {
@@ -76,6 +78,26 @@ const createIcon = (item) => {
     };
 
     const [open,setOpen]=useState(false);
+    const [loginModalOpen, setLoginModalOpen] = useState(false);
+    const [authenticated, setAuthenticated] = useState(() => isAuthenticated());
+
+    useEffect(() => {
+      setAuthenticated(isAuthenticated());
+    }, []);
+
+    const handleActionButtonClick = () => {
+      if (authenticated) {
+        setOpen(true);
+        return;
+      }
+
+      setLoginModalOpen(true);
+    };
+
+    const handleLoginSuccess = () => {
+      setAuthenticated(true);
+      setLoginModalOpen(false);
+    };
 
   
 
@@ -90,10 +112,15 @@ const createIcon = (item) => {
         <Button
         color="success"
         className="add-work-btn"
-        onClick={()=>setOpen(true)}
+        onClick={handleActionButtonClick}
         >
-        + Kiritish
+        {authenticated ? "+ Kiritish" : "Kirish"}
         </Button>
+      <LoginModal
+        isOpen={loginModalOpen}
+        toggle={() => setLoginModalOpen((currentValue) => !currentValue)}
+        onSuccess={handleLoginSuccess}
+      />
       <MapContainer center={position} zoom={12} style={{ height: "100vh", width: "100%" }}>
         
       <TileLayer

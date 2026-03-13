@@ -3,27 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Task;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Direction extends Model
 {
-    
-protected $table = "Direction"
+    protected $fillable = [
+        'name',
+    ];
 
-
-
-
-
-
-
-
-
-
-
-
-public function task()
+    public function tasks(): HasMany
     {
-        return $this->belongsTo(Task::class);
+        return $this->hasMany(Task::class);
     }
-}
 }

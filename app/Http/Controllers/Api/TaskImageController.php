@@ -2,63 +2,82 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Models\TaskImage;
+use App\Support\PublicImageService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
-class TaskImageController
+class TaskImageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json([
+            'data' => TaskImage::query()->with('task')->latest()->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request, PublicImageService $imageService): JsonResponse
     {
-        //
+        $validated = $this->validatedData($request);
+
+        $taskImage = TaskImage::create([
+            'task_id' => $validated['task_id'],
+            'path' => $imageService->store($request->file('image')),
+        ])->load('task');
+
+        return response()->json([
+            'data' => $taskImage,
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show(TaskImage $taskImage): JsonResponse
     {
-        //
+        return response()->json([
+            'data' => $taskImage->load('task'),
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, TaskImage $taskImage, PublicImageService $imageService): JsonResponse
     {
-        //
+        $validated = $this->validatedData($request, true);
+
+        if (array_key_exists('task_id', $validated)) {
+            $taskImage->task_id = $validated['task_id'];
+        }
+
+        if ($request->hasFile('image')) {
+            $oldPath = $taskImage->path;
+            $taskImage->path = $imageService->store($request->file('image'));
+            $taskImage->save();
+            $imageService->delete($oldPath);
+        } else {
+            $taskImage->save();
+        }
+
+        return response()->json([
+            'data' => $taskImage->fresh()->load('task'),
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(TaskImage $taskImage, PublicImageService $imageService): JsonResponse
     {
-        //
+        $imageService->delete($taskImage->path);
+        $taskImage->delete();
+
+        return response()->json([
+            'message' => 'Task image deleted successfully.',
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    private function validatedData(Request $request, bool $isUpdate = false): array
     {
-        //
-    }
+        $required = $isUpdate ? 'sometimes' : 'required';
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return $request->validate([
+            'task_id' => [$required, 'integer', Rule::exists('tasks', 'id')],
+            'image' => [$required, 'image', 'max:5120'],
+        ]);
     }
 }

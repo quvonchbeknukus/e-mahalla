@@ -1,0 +1,592 @@
+[
+  {
+    "name": "Qorasroy MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.40977,
+    "long": 69.232748,
+    "neighborhood_chairman": "NABIEVDilshod Erkinovich",
+    "neighborhood_phone": "99-867-28-08",
+    "prevention_inspector": "Qodirov Ravshan Abdujjaborovich",
+    "inspector_phone": "93 514 06 24"
+  },
+  {
+    "name": "Sohibkor MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.407777,
+    "long": 69.181255,
+    "neighborhood_chairman": "KAPLANBEKOVXikmat Abdullaevich",
+    "neighborhood_phone": "94-675-33-11",
+    "prevention_inspector": "Abdullayev Baxrom",
+    "inspector_phone": "99 898 03 43"
+  },
+  {
+    "name": "Oltin tepa MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.359937,
+    "long": 69.114117,
+    "neighborhood_chairman": "USMONOVMuxtorjon Abdusalomovich",
+    "neighborhood_phone": "93-509-15-63",
+    "prevention_inspector": "Yoldashev Saparali",
+    "inspector_phone": "88 043 19 93"
+  },
+  {
+    "name": "Qir ariq MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "bosh",
+    "neighborhood_phone": "bosh",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Yangi Hayot MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.348969,
+    "long": 69.1216,
+    "neighborhood_chairman": "BERDIQILOVADilrabo Xolmo‘minovna",
+    "neighborhood_phone": "97-425-14-41",
+    "prevention_inspector": "Norboyev Bobur",
+    "inspector_phone": "95 102 04 16"
+  },
+  {
+    "name": "Iqbol MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.371979,
+    "long": 69.330418,
+    "neighborhood_chairman": "ROZIQOVAbdumajid Qodirovich",
+    "neighborhood_phone": "99-722-96-61",
+    "prevention_inspector": "Rasulov Faridun Komiljonivich",
+    "inspector_phone": "97 778 18 77"
+  },
+  {
+    "name": "Sabzavot MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "XIKMATOVFathulla Fayzullaevich",
+    "neighborhood_phone": "97-490-41-00",
+    "prevention_inspector": "Xasanov Baxrom",
+    "inspector_phone": "94 104 47 42"
+  },
+  {
+    "name": "Istiqbol MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "MIRSOATOVMirfozil Mirafzal o‘g‘li",
+    "neighborhood_phone": "97-764-56-56",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Diydor MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ShARIPOVFarux Fazliddinovich",
+    "neighborhood_phone": "97-480-62-67",
+    "prevention_inspector": "Mahkamov Sirojiddin Jumanov Jalloliddin",
+    "inspector_phone": "99 469 97 9793 290 53 13"
+  },
+  {
+    "name": "“Xasanboy guzari”MFY da Hokim yordamchisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ANVAROVBotir G‘ofurovich",
+    "neighborhood_phone": "97-342-45-15",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Chig‘atoy MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.351666,
+    "long": 69.153347,
+    "neighborhood_chairman": "G‘ANIEVDoniyor Baxtiyor o‘g‘li",
+    "neighborhood_phone": "97-447-96-00",
+    "prevention_inspector": "Abdullayev Davron Murodilla ogli",
+    "inspector_phone": "77 489 94 94"
+  },
+  {
+    "name": "“Qush qo‘ndi” MFY da Hokim yordamchisi",
+    "crime_level": "bosh",
+    "lat": 41.357619,
+    "long": 69.077312,
+    "neighborhood_chairman": "PIRMUXAMEDOVAlisher Pirmatovich",
+    "neighborhood_phone": "99-988-33-58",
+    "prevention_inspector": "Isayev Otabek",
+    "inspector_phone": "88 348 67 67"
+  },
+  {
+    "name": "Beruniy MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.379165,
+    "long": 69.13871,
+    "neighborhood_chairman": "ISMAILOVAnarqul Isaevich",
+    "neighborhood_phone": "97-167-16-18",
+    "prevention_inspector": "Nematov Shahzod",
+    "inspector_phone": "97 782 64 96"
+  },
+  {
+    "name": "“Ahillik” MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "SARIMSAQOVAMaktuba Tajievna",
+    "neighborhood_phone": "99-877-32-68",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "O‘rikzor MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.35596,
+    "long": 69.104558,
+    "neighborhood_chairman": "USMONOVMirg‘ofir Mirislamovich",
+    "neighborhood_phone": "99-874-68-90",
+    "prevention_inspector": "Ergashev Diyorbek Muhammed O’gli",
+    "inspector_phone": "95 020 17 04"
+  },
+  {
+    "name": "Bog‘izilol MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.388733,
+    "long": 69.170843,
+    "neighborhood_chairman": "XAKIMOVRavshan Abdumalikovich O‘zbek",
+    "neighborhood_phone": "97-780-35-88",
+    "prevention_inspector": "Karimov Ilhom",
+    "inspector_phone": "93 552 28 27"
+  },
+  {
+    "name": "Oqibat MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ABDUVOXIDOVBaxrom Sultanovich",
+    "neighborhood_phone": "97-157-40-90",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "94 860 90 04"
+  },
+  {
+    "name": "Tutzor MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ASQAROVBaxtiyor Xudoyberdiyevich",
+    "neighborhood_phone": "99-765-27-72",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Quruvchi MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "RIXSIEVBaxodir Gafurovich",
+    "neighborhood_phone": "97-401-51-78",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Darxon MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.388659,
+    "long": 69.293416,
+    "neighborhood_chairman": "GAZIEVRixsitilla Fatxullaevich",
+    "neighborhood_phone": "94-622-82-30",
+    "prevention_inspector": "Mannafov Farxod Raupovich",
+    "inspector_phone": "99 066 08 92"
+  },
+  {
+    "name": "Chuvalachi MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.444504,
+    "long": 69.26068,
+    "neighborhood_chairman": "ABDULLAEVAvaz Bo‘rikvich",
+    "neighborhood_phone": "77-011-12-13",
+    "prevention_inspector": "Meliyev Doston Farhod o’gli",
+    "inspector_phone": "94 159 33 03"
+  },
+  {
+    "name": "Zargar MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.360574,
+    "long": 69.127705,
+    "neighborhood_chairman": "IBRAGIMOVSanjar To‘lqinovich",
+    "neighborhood_phone": "97-761-02-01",
+    "prevention_inspector": "Anarov Medeu Abdisamat ogli",
+    "inspector_phone": "99 340 42 99"
+  },
+  {
+    "name": "Oqtosh MFY raisi",
+    "crime_level": "bosh",
+    "lat": 41.350552,
+    "long": 69.080361,
+    "neighborhood_chairman": "MIRZAEVDilshod Amanovich",
+    "neighborhood_phone": "93-873-42-42",
+    "prevention_inspector": "Ahmadaliyev Shavkat To‘lqin o‘gli",
+    "inspector_phone": "94 635 58 05"
+  },
+  {
+    "name": "Nurhayot MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ARTIKOVErkin Nig‘matovich",
+    "neighborhood_phone": "93-546-11-69",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Ko‘xinur MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "XOLMATOVAGavhar Yunusovna",
+    "neighborhood_phone": "93-003-30-52",
+    "prevention_inspector": "Abdusattorov Raimjon Nizom o‘gli",
+    "inspector_phone": "94 225 16 02"
+  },
+  {
+    "name": "Ko‘ksaroy MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ABDURAXOVARaisa Karisbaevna",
+    "neighborhood_phone": "97-470-91-03",
+    "prevention_inspector": "Qudratullayev Zafar Shuxratulla o‘gli",
+    "inspector_phone": "97 762 28 48"
+  },
+  {
+    "name": "Raxbarobod MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "RAXMATOVSultonmurod Tuxtaboevich",
+    "neighborhood_phone": "99-020-64-49",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "A.Navoiy MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "YuLDAShEVSulton To‘xtaevich",
+    "neighborhood_phone": "93-532-14-31",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Bunyodkor MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "BERDIEVFazlitdin Erkinboevich",
+    "neighborhood_phone": "99-300-24-96",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Zarbdor MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "YaXSHILIKOVRustam Sidazovich",
+    "neighborhood_phone": "97-125-76-76",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Qizg‘aldoq MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "AXMEDOVElyor Erkinovich",
+    "neighborhood_phone": "97-705-57-50",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Kensoy MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "TURSUNOVMuzaffar Abduvoxidovich",
+    "neighborhood_phone": "90-357-14-71",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Oq tom MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "QUCHQAROVAAziza Qaxorovna",
+    "neighborhood_phone": "33-928-05-05",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Qorabo‘rik MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ChINOROVFurqat Xamzaevich",
+    "neighborhood_phone": "93-562-60-70",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Shamsiobod MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "SUNNATOVNurddin Xusanovich",
+    "neighborhood_phone": "93-507-08-08",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "29-maktab o‘qituvchisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "MAVLANOVKayrat Ziyodbekovich",
+    "neighborhood_phone": "93-586-13-04",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Dilshod Fayz Saxovat Baraka oilaviy korxonasi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "YULDASHEVRustam Kadirovich",
+    "neighborhood_phone": "93-377-33-39",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Xasanboy MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "MUQIMOVBaxrom Turajanovich",
+    "neighborhood_phone": "97-742-07-46",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Gultepa MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ABDULLAEVAMunira Juraevna",
+    "neighborhood_phone": "97-705-10-83",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Sirg‘ali MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "USMANOVADiloram Yuldashevna",
+    "neighborhood_phone": "97-748-08-69",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "G‘ishtko‘prik MFY hokim yordamchisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "DAVLITOVAlbert Yunusovich",
+    "neighborhood_phone": "99-899-00-47",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Beshterak MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ShARIPOVAMatluba Ismailovna",
+    "neighborhood_phone": "99-001-40-80",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Ma’rifat MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "LATIPOVAnvar Kuchkarovich",
+    "neighborhood_phone": "97-432-03-60",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Bog‘bon MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "SULTONMURODOVRustam Sagdullaevich",
+    "neighborhood_phone": "97-330-41-94",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Tinchlik MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "QAYUMOVDoniyor Abduxakimovich",
+    "neighborhood_phone": "99-443-93-83",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Ayri ota MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ISMAILOVBaxtiyor Abduraxmanovich,",
+    "neighborhood_phone": "90-901-05-95",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Zaxariq MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "QORABOEVUbaydulla Turdievich,",
+    "neighborhood_phone": "99-840-82-54",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Kalas MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ABDURASULOVAMoxira Akbarovna",
+    "neighborhood_phone": "95-007-30-68",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Uch sada MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ISADJANOVBaxtiyor Abdunabievich,",
+    "neighborhood_phone": "99-323-32-31",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Uch chinor MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "MUSAEVIxtiyor Abduhamitovich,",
+    "neighborhood_phone": "90-017-15-15",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Xususiy tadbirkor",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "PULATOVQaxramon Oqiljanovich,",
+    "neighborhood_phone": "97-777-19-69",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Ibrat MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ABEEVUmidjon Beysebaevich,",
+    "neighborhood_phone": "97-491-17-74",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Ko‘kterak MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "ZAYNUTDINOVNuriddin Zuxurovich,",
+    "neighborhood_phone": "97-477-56-12",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Tadbirkor",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "KARABAEVZaxidilla Abdullaevich,",
+    "neighborhood_phone": "97-736-19-11",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Oydin xayot MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "GAPPAROVMuzaffar Djuraevich,",
+    "neighborhood_phone": "97-708-65-65",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Xususiy tadbirkor",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "NABIEVO‘tkirjon Abduhamidovich,",
+    "neighborhood_phone": "99-874-32-64",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Xuvaydo MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "BEKJANOVDilshod Jumaniyozovich,",
+    "neighborhood_phone": "99-373-34-77",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Avliyo ota MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "SALIMOVAbdumalik Abduraxmanovich,",
+    "neighborhood_phone": "90-806-93-03",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  },
+  {
+    "name": "Toshkent tumani Fayzobod MFY raisi",
+    "crime_level": "bosh",
+    "lat": 0,
+    "long": 0,
+    "neighborhood_chairman": "INAGAMOVAyozdjon Axmadjonovich,",
+    "neighborhood_phone": "97-738-96-54",
+    "prevention_inspector": "bosh",
+    "inspector_phone": "bosh"
+  }
+]

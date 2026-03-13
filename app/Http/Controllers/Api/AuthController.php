@@ -3,34 +3,33 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
-{
-    $request->validate([
-        'phone' => 'required',
-        'password' => 'required',
-    ]);
+    public function login(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone' => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ]);
 
-    $user = User::where('phone', $request->phone)->first();
+        $user = User::query()->where('phone', $validated['phone'])->first();
 
-    if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'message' => "Telefon yoki parol noto'g'ri.",
+            ], 401);
+        }
+
+        $token = $user->createToken('token')->plainTextToken;
+
         return response()->json([
-            'message' => 'Telefon yoki parol noto‘g‘ri'
-        ], 401);
+            'user' => $user,
+            'token' => $token,
+        ]);
     }
-
-    $token = $user->createToken('token')->plainTextToken;
-
-    return response()->json([
-        'user' => $user,
-        'token' => $token
-    ]);
-}
-    
-
 }

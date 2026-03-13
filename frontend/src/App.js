@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./pages/Login/Login";
 import Map from "./pages/Main/Map";
 
 function App() {
@@ -9,11 +8,11 @@ function App() {
 
       <Routes>
 
-        <Route path="/" element={<Navigate to="/login" />} />
-
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
 
         <Route path="/home" element={<Map />} />
+
+        <Route path="*" element={<Navigate to="/home" replace />} />
 
       </Routes>
 
