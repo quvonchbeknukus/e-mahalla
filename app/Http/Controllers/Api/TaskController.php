@@ -25,6 +25,31 @@ class TaskController extends Controller
 
     public function store(Request $request, PublicImageService $imageService): JsonResponse
     {
+        if ($request->has('tasks')) {
+            $validated = $this->validatedBulkData($request);
+
+            $tasks = DB::transaction(function () use ($validated, $request, $imageService) {
+                return collect($validated['tasks'])
+                    ->values()
+                    ->map(function (array $taskData, int $index) use ($request, $imageService) {
+                        $task = Task::create(Arr::except($taskData, ['images']));
+
+                        foreach ($request->file("tasks.$index.images", []) as $image) {
+                            $task->images()->create([
+                                'path' => $imageService->store($image),
+                            ]);
+                        }
+
+                        return $task->load($this->relations());
+                    })
+                    ->all();
+            });
+
+            return response()->json([
+                'data' => $tasks,
+            ], 201);
+        }
+
         $validated = $this->validatedData($request);
 
         $task = DB::transaction(function () use ($validated, $request, $imageService) {
@@ -109,10 +134,23 @@ class TaskController extends Controller
             'direction_id' => [$required, 'integer', Rule::exists('directions', 'id')],
             'date' => [$required, 'date'],
             'text' => [$required, 'string'],
-            'images' => ['sometimes', 'array'],
+            'images' => ['sometimes', 'array', 'max:4'],
             'images.*' => ['image', 'max:5120'],
             'removed_image_ids' => ['sometimes', 'array'],
             'removed_image_ids.*' => ['integer', Rule::exists('task_images', 'id')],
+        ]);
+    }
+
+    private function validatedBulkData(Request $request): array
+    {
+        return $request->validate([
+            'tasks' => ['required', 'array', 'min:1'],
+            'tasks.*.neighborhood_id' => ['required', 'integer', Rule::exists('neighborhoods', 'id')],
+            'tasks.*.direction_id' => ['required', 'integer', Rule::exists('directions', 'id')],
+            'tasks.*.date' => ['required', 'date'],
+            'tasks.*.text' => ['required', 'string'],
+            'tasks.*.images' => ['sometimes', 'array', 'max:4'],
+            'tasks.*.images.*' => ['image', 'max:5120'],
         ]);
     }
 

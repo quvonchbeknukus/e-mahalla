@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Neighborhood;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,7 +14,13 @@ class NeighborhoodController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => Neighborhood::query()->latest()->get(),
+            'data' => Neighborhood::query()
+                ->withCount([
+                    'tasks as total_tasks_count',
+                    'tasks as today_tasks_count' => fn ($query) => $query->whereDate('date', Carbon::today()),
+                ])
+                ->latest()
+                ->get(),
         ]);
     }
 
@@ -29,7 +36,7 @@ class NeighborhoodController extends Controller
     public function show(Neighborhood $neighborhood): JsonResponse
     {
         return response()->json([
-            'data' => $neighborhood,
+            'data' => $this->detailedNeighborhood($neighborhood),
         ]);
     }
 
@@ -38,7 +45,7 @@ class NeighborhoodController extends Controller
         $neighborhood->update($this->validatedData($request, true));
 
         return response()->json([
-            'data' => $neighborhood->fresh(),
+            'data' => $this->detailedNeighborhood($neighborhood->fresh()),
         ]);
     }
 
@@ -57,7 +64,7 @@ class NeighborhoodController extends Controller
 
         return $request->validate([
             'name' => [$required, 'string', 'max:100'],
-            'crime_level' => [$required, 'string', Rule::in(['yuqori', "o'rta", 'past', 'bosh'])],
+            'crime_level' => [$required, 'string', Rule::in(['qizil', 'sariq', 'yashil', 'yuqori', "o'rta", 'past', 'bosh'])],
             'lat' => [$required, 'numeric'],
             'long' => [$required, 'numeric'],
             'neighborhood_chairman' => [$required, 'string', 'max:100'],
@@ -65,5 +72,20 @@ class NeighborhoodController extends Controller
             'prevention_inspector' => [$required, 'string', 'max:100'],
             'inspector_phone' => [$required, 'string', 'max:100'],
         ]);
+    }
+
+    private function detailedNeighborhood(Neighborhood $neighborhood): Neighborhood
+    {
+        return $neighborhood
+            ->loadCount([
+                'tasks as total_tasks_count',
+                'tasks as today_tasks_count' => fn ($query) => $query->whereDate('date', Carbon::today()),
+            ])
+            ->load([
+                'tasks' => fn ($query) => $query
+                    ->with(['direction', 'images'])
+                    ->latest('date')
+                    ->latest('id'),
+            ]);
     }
 }

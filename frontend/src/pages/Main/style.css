@@ -30,40 +30,53 @@
   cursor: pointer;
 }
 
-.marker-wrapper{
-  position:relative;
-}
-
-.marker-icon{
-  width:32px;
-}
-
-.marker-count{
-
-  position:absolute;
-  top:-6px;
-  right:-10px;
-
-  background:#ef4444;
-
-  color:white;
-
-  font-size:12px;
-  font-weight:bold;
-
-  width:20px;
-  height:20px;
-
-  border-radius:50%;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  box-shadow:0 0 6px rgba(0,0,0,.5);
-
-}
-
 .leaflet-container .leaflet-marker-pane img {
     width: 45px !important;
+}
+
+.neighborhood-pin-icon{
+  background: transparent;
+  border: 0;
+}
+
+.neighborhood-pin{
+  position: relative;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(180deg, #ff6b6b, #d31616);
+  border: 2px solid #b90f0f;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 8px 18px rgba(185, 15, 15, 0.28);
+}
+
+.neighborhood-pin__inner{
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.neighborhood-pin__badge{
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  border: 2px solid #fff3f3;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 12px rgba(239, 68, 68, 0.35);
+  transform: rotate(45deg);
 }

@@ -1,83 +1,198 @@
-import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-} from "reactstrap";
-
+import { useEffect, useState } from "react";
+import { Alert, Button, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
+import { apiRequest, getAuthErrorMessage } from "../../utils/auth";
+import NeighborhoodEditModal from "../NeighborhoodEditModal/NeighborhoodEditModal";
 import "./MahallaModal.css";
 
-function MahallaModal({selectedMahalla,setSelectedMahalla}){
+function MahallaModal({
+  selectedMahalla,
+  setSelectedMahalla,
+  authenticated = false,
+  selectedDirectionId = "",
+  startDate = "",
+  endDate = "",
+  onNeighborhoodUpdated,
+}) {
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
-const data = [
-{
-date:"2026-03-10",
-direction:"Profilaktika",
-image:"https://picsum.photos/600/300",
-text:"Mahallada profilaktik suhbatlar o'tkazildi."
-},
-{
-date:"2026-03-12",
-direction:"Yoshlar",
-image:"https://picsum.photos/600/301",
-text:"Yoshlar bilan sport musobaqasi tashkil qilindi."
-}
-];
+  useEffect(() => {
+    if (!selectedMahalla?.id) {
+      setDetails(null);
+      setError("");
+      setLoading(false);
+      setEditModalOpen(false);
+      return;
+    }
 
-return(
+    let active = true;
 
-<Modal
-isOpen={selectedMahalla !== null}
-toggle={()=>setSelectedMahalla(null)}
-size="xl"
->
+    const loadNeighborhoodDetails = async () => {
+      setLoading(true);
+      setError("");
 
-<ModalHeader toggle={()=>setSelectedMahalla(null)}>
+      try {
+        const response = await apiRequest(`/neighborhoods/${selectedMahalla.id}`);
 
-{selectedMahalla?.name}
+        if (active) {
+          setDetails(response.data ?? null);
+        }
+      } catch (requestError) {
+        if (active) {
+          setError(getAuthErrorMessage(requestError));
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
 
-</ModalHeader>
+    loadNeighborhoodDetails();
 
-<ModalBody>
+    return () => {
+      active = false;
+    };
+  }, [selectedMahalla]);
 
-<div className="mahalla-info">
+  const modalData = details ?? selectedMahalla;
+  const tasks = (details?.tasks ?? []).filter((item) => {
+    if (
+      selectedDirectionId &&
+      String(item.direction_id) !== selectedDirectionId
+    ) {
+      return false;
+    }
 
-<p>{selectedMahalla?.description}</p>
+    if (startDate && item.date < startDate) {
+      return false;
+    }
 
-</div>
+    if (endDate && item.date > endDate) {
+      return false;
+    }
 
-<hr/>
+    return true;
+  });
 
-{data.map((item,i)=>(
+  const handleNeighborhoodEditSuccess = (updatedNeighborhood) => {
+    setDetails(updatedNeighborhood);
+    setSelectedMahalla(updatedNeighborhood);
+    setEditModalOpen(false);
+    onNeighborhoodUpdated?.(updatedNeighborhood);
+  };
 
-<div className="work-block" key={i}>
+  return (
+    <>
+      <Modal
+        isOpen={selectedMahalla !== null}
+        toggle={() => setSelectedMahalla(null)}
+        size="xl"
+      >
+        <ModalHeader toggle={() => setSelectedMahalla(null)}>
+          <div className="mahalla-modal-header">
+            <span>{modalData?.name}</span>
 
-<div className="work-meta">
+            {authenticated && modalData?.id && (
+              <Button
+                type="button"
+                color="primary"
+                size="sm"
+                className="mahalla-edit-btn"
+                onClick={() => setEditModalOpen(true)}
+              >
+                Tahrirlash
+              </Button>
+            )}
+          </div>
+        </ModalHeader>
 
-<span>{item.date}</span>
-<span>{item.direction}</span>
+        <ModalBody>
+          <div className="mahalla-info-grid">
+            <div className="mahalla-info-card">
+              <span>Jami ishlar</span>
+              <strong>{tasks.length || modalData?.total_tasks_count || 0}</strong>
+            </div>
 
-</div>
+            <div className="mahalla-info-card">
+              <span>Mahalla raisi</span>
+              <strong>{modalData?.neighborhood_chairman || "-"}</strong>
+            </div>
 
-<img
-src={item.image}
-alt=""
-className="work-image"
-/>
+            <div className="mahalla-info-card">
+              <span>Telefon</span>
+              <strong>{modalData?.neighborhood_phone || "-"}</strong>
+            </div>
 
-<p className="work-text">
-{item.text}
-</p>
+            <div className="mahalla-info-card">
+              <span>Profilaktika inspektori</span>
+              <strong>{modalData?.prevention_inspector || "-"}</strong>
+            </div>
+          </div>
 
-</div>
+          {error && <Alert color="danger">{error}</Alert>}
 
-))}
+          {loading ? (
+            <div className="mahalla-loading">
+              <Spinner color="primary" />
+            </div>
+          ) : tasks.length === 0 ? (
+            <div className="mahalla-empty">
+              Bu mahalla uchun hozircha task kiritilmagan.
+            </div>
+          ) : (
+            <div className="work-list">
+              {tasks.map((item) => (
+                <div className="work-block" key={item.id}>
+                  <div className="work-meta">
+                    <span>{item.date}</span>
+                    <span>{item.direction?.name || "Yo'nalish yo'q"}</span>
+                  </div>
 
-</ModalBody>
+                  <p className="work-text">{item.text}</p>
 
-</Modal>
+                  {item.images?.length > 0 && (
+                    <div
+                      className={
+                        item.images.length === 1
+                          ? "work-images work-images--single"
+                          : "work-images work-images--grid"
+                      }
+                    >
+                      {item.images.map((image) => (
+                        <a
+                          key={image.id}
+                          href={image.image_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="work-image-link"
+                        >
+                          <img
+                            src={image.image_url}
+                            alt={item.text}
+                            className="work-image"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </ModalBody>
+      </Modal>
 
-);
-
+      <NeighborhoodEditModal
+        isOpen={editModalOpen}
+        toggle={() => setEditModalOpen(false)}
+        neighborhood={modalData}
+        onSuccess={handleNeighborhoodEditSuccess}
+      />
+    </>
+  );
 }
 
 export default MahallaModal;

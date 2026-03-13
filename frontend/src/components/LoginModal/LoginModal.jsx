@@ -10,33 +10,37 @@ import {
   ModalBody,
   ModalHeader,
 } from "reactstrap";
-import { loginWithCredentials } from "../../utils/auth";
+import { getAuthErrorMessage, loginWithCredentials } from "../../utils/auth";
 import "./LoginModal.css";
 
 function LoginModal({ isOpen, toggle, onSuccess }) {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setLogin("");
       setPassword("");
       setError("");
+      setSubmitting(false);
     }
   }, [isOpen]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setSubmitting(true);
+    setError("");
 
-    const isValid = loginWithCredentials(login, password);
-
-    if (!isValid) {
-      setError("Login yoki parol noto'g'ri");
-      return;
+    try {
+      const user = await loginWithCredentials(login, password);
+      onSuccess(user);
+    } catch (requestError) {
+      setError(getAuthErrorMessage(requestError));
+    } finally {
+      setSubmitting(false);
     }
-
-    onSuccess();
   };
 
   return (
@@ -49,13 +53,14 @@ function LoginModal({ isOpen, toggle, onSuccess }) {
 
         <Form onSubmit={handleSubmit}>
           <FormGroup>
-            <Label for="map-login">Login</Label>
+            <Label for="map-login">Telefon</Label>
             <Input
               id="map-login"
               type="text"
-              placeholder="Login kiriting"
+              placeholder="Telefon raqamingizni kiriting"
               value={login}
               onChange={(event) => setLogin(event.target.value)}
+              disabled={submitting}
             />
           </FormGroup>
 
@@ -67,11 +72,12 @@ function LoginModal({ isOpen, toggle, onSuccess }) {
               placeholder="Parol kiriting"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              disabled={submitting}
             />
           </FormGroup>
 
-          <Button color="primary" className="login-modal-submit">
-            Kirish
+          <Button color="primary" className="login-modal-submit" disabled={submitting}>
+            {submitting ? "Kirilmoqda..." : "Kirish"}
           </Button>
         </Form>
       </ModalBody>

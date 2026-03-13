@@ -1,164 +1,529 @@
-import { MapContainer, TileLayer, GeoJSON, Marker } from "react-leaflet";
+import { useEffect, useMemo, useState } from "react";
+import {
+  GeoJSON,
+  MapContainer,
+  Marker,
+  TileLayer,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
 import { Button } from "reactstrap";
-import { useEffect, useState } from "react";
 import L from "leaflet";
-import districts from "../../data/tumanlar.json";
-import mahallalar from "../../data/mahallalar.json";
-import MapHeader from "../../components/MapHeader/MapHeader";
 import MapDashboard from "../../components/MapDashboard/MapDashboard";
-import WorkModal from "../../components/WorkModal/WorkModal";
-import MahallaModal from "../../components/MahallaModal/MahallaModal";
+import MapHeader from "../../components/MapHeader/MapHeader";
 import LoginModal from "../../components/LoginModal/LoginModal";
-import { isAuthenticated } from "../../utils/auth";
+import MahallaModal from "../../components/MahallaModal/MahallaModal";
+import WorkModal from "../../components/WorkModal/WorkModal";
+import districts from "../../data/tumanlar.json";
+import {
+  apiRequest,
+  fetchCurrentUser,
+  isAuthenticated,
+  logoutUser,
+} from "../../utils/auth";
 import "./style.css";
 
-function Map() {
+function normalizeNeighborhood(item) {
+  const lat = Number(item.lat);
+  const long = Number(item.long);
+  const totalTasksCount = Number(item.total_tasks_count ?? 0);
+  const todayTasksCount = Number(item.today_tasks_count ?? 0);
 
-const createIcon = (item) => {
+  return {
+    ...item,
+    lat,
+    long,
+    total_tasks_count: Number.isFinite(totalTasksCount) ? totalTasksCount : 0,
+    today_tasks_count: Number.isFinite(todayTasksCount) ? todayTasksCount : 0,
+    description: [
+      `Jami ishlar: ${Number.isFinite(totalTasksCount) ? totalTasksCount : 0}`,
+      `Mahalla raisi: ${item.neighborhood_chairman}`,
+      `Telefon: ${item.neighborhood_phone}`,
+      `Profilaktika inspektori: ${item.prevention_inspector}`,
+      `Inspektor telefoni: ${item.inspector_phone}`,
+    ].join(" | "),
+  };
+}
 
-  let iconUrl = "";
+function normalizeTaskItem(item) {
+  return {
+    id: item.id,
+    neighborhood_id: Number(item.neighborhood_id),
+    direction_id: Number(item.direction_id),
+    date: item.date,
+  };
+}
 
-  if(item.category === "low"){
-    iconUrl = "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
-  }
-
-  if(item.category === "medium"){
-    iconUrl = "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
-  }
-
-  if(item.category === "high"){
-    iconUrl = "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-  }
-
+function createNeighborhoodPinIcon(taskCount) {
   return L.divIcon({
-
-    className: "custom-marker",
-
+    className: "neighborhood-pin-icon",
     html: `
-      <div class="marker-wrapper">
-
-        <img 
-        src="${iconUrl}"
-        class="marker-icon"
-        />
-
-        <div class="marker-count">
-          ${item.works}
-        </div>
-
+      <div class="neighborhood-pin">
+        <span class="neighborhood-pin__inner"></span>
+        <span class="neighborhood-pin__badge">${taskCount}</span>
       </div>
     `,
-
-    iconSize: [30, 40],
-    iconAnchor: [16, 32]
-
+    iconSize: [34, 50],
+    iconAnchor: [17, 46],
   });
+}
 
-};
+function MapViewportController({ focusNeighborhood, visibleNeighborhoods }) {
+  const map = useMap();
 
-    const position = [41.42623827519427, 69.26237574615256];
-    const [selectedMahalla, setSelectedMahalla] = useState(null);
+  useEffect(() => {
+    if (focusNeighborhood) {
+      map.flyTo([focusNeighborhood.lat, focusNeighborhood.long], 15, {
+        animate: true,
+        duration: 0.8,
+      });
+      return;
+    }
 
-    const tashkentDistrict = districts.find(
-        (item) => item.name === "Тошкент тумани"
-    );
+    if (visibleNeighborhoods.length === 1) {
+      map.flyTo(
+        [visibleNeighborhoods[0].lat, visibleNeighborhoods[0].long],
+        14,
+        {
+          animate: true,
+          duration: 0.8,
+        }
+      );
+      return;
+    }
 
-    const geoData = {
+    if (visibleNeighborhoods.length > 1) {
+      const bounds = L.latLngBounds(
+        visibleNeighborhoods.map((item) => [item.lat, item.long])
+      );
+
+      map.fitBounds(bounds, {
+        padding: [60, 60],
+        maxZoom: 13,
+      });
+    }
+  }, [focusNeighborhood, map, visibleNeighborhoods]);
+
+  return null;
+}
+
+function Map() {
+  const position = [41.42623827519427, 69.26237574615256];
+  const tashkentDistrict = districts.find(
+    (item) => item.id === 2722 && item.geo_polygon
+  );
+  const geoData = tashkentDistrict?.geo_polygon
+    ? {
         type: "Feature",
         properties: {
-        name: tashkentDistrict.name,
+          name: tashkentDistrict.name,
         },
         geometry: tashkentDistrict.geo_polygon,
-    };
+      }
+    : null;
 
-    const handleMarkerClick = (item) => {
-          console.log("bosildi", item)
-        setSelectedMahalla(item);
-  
-    };
+  const [selectedMahalla, setSelectedMahalla] = useState(null);
+  const [allNeighborhoods, setAllNeighborhoods] = useState([]);
+  const [directionOptions, setDirectionOptions] = useState([]);
+  const [taskItems, setTaskItems] = useState([]);
+  const [selectedNeighborhoodId, setSelectedNeighborhoodId] = useState("");
+  const [selectedDirectionId, setSelectedDirectionId] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [open, setOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [authenticated, setAuthenticated] = useState(() => isAuthenticated());
+  const [authChecking, setAuthChecking] = useState(true);
 
-    const [open,setOpen]=useState(false);
-    const [loginModalOpen, setLoginModalOpen] = useState(false);
-    const [authenticated, setAuthenticated] = useState(() => isAuthenticated());
+  useEffect(() => {
+    let active = true;
 
-    useEffect(() => {
-      setAuthenticated(isAuthenticated());
-    }, []);
+    const syncAuthState = async () => {
+      if (!isAuthenticated()) {
+        if (active) {
+          setAuthenticated(false);
+          setAuthChecking(false);
+        }
 
-    const handleActionButtonClick = () => {
-      if (authenticated) {
-        setOpen(true);
         return;
       }
 
-      setLoginModalOpen(true);
+      try {
+        const user = await fetchCurrentUser();
+
+        if (!active) {
+          return;
+        }
+
+        setAuthenticated(Boolean(user));
+      } catch (error) {
+        if (!active) {
+          return;
+        }
+
+        setAuthenticated(false);
+      } finally {
+        if (active) {
+          setAuthChecking(false);
+        }
+      }
     };
 
-    const handleLoginSuccess = () => {
-      setAuthenticated(true);
+    syncAuthState();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadMapData = async () => {
+      try {
+        const [neighborhoodResponse, directionResponse, taskResponse] =
+          await Promise.all([
+            apiRequest("/neighborhoods"),
+            apiRequest("/directions"),
+            apiRequest("/tasks"),
+          ]);
+
+        if (!active) {
+          return;
+        }
+
+        setAllNeighborhoods(
+          (neighborhoodResponse.data ?? []).map(normalizeNeighborhood)
+        );
+        setDirectionOptions(directionResponse.data ?? []);
+        setTaskItems((taskResponse.data ?? []).map(normalizeTaskItem));
+      } catch (error) {
+        if (active) {
+          setAllNeighborhoods([]);
+          setDirectionOptions([]);
+          setTaskItems([]);
+        }
+      }
+    };
+
+    loadMapData();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const mappableNeighborhoods = useMemo(
+    () =>
+      allNeighborhoods.filter(
+        (item) =>
+          Number.isFinite(item.lat) &&
+          Number.isFinite(item.long) &&
+          item.lat !== 0 &&
+          item.long !== 0
+      ),
+    [allNeighborhoods]
+  );
+
+  const filteredTaskItems = useMemo(
+    () =>
+      taskItems.filter((item) => {
+        if (
+          selectedDirectionId &&
+          String(item.direction_id) !== selectedDirectionId
+        ) {
+          return false;
+        }
+
+        if (startDate && item.date < startDate) {
+          return false;
+        }
+
+        if (endDate && item.date > endDate) {
+          return false;
+        }
+
+        return true;
+      }),
+    [endDate, selectedDirectionId, startDate, taskItems]
+  );
+
+  const hasTaskFilters = Boolean(selectedDirectionId || startDate || endDate);
+
+  const taskCountsByNeighborhood = useMemo(
+    () =>
+      filteredTaskItems.reduce((counts, item) => {
+        counts[item.neighborhood_id] = (counts[item.neighborhood_id] ?? 0) + 1;
+        return counts;
+      }, {}),
+    [filteredTaskItems]
+  );
+
+  const visibleNeighborhoodIds = useMemo(
+    () =>
+      new Set(
+        hasTaskFilters
+          ? filteredTaskItems.map((item) => item.neighborhood_id)
+          : mappableNeighborhoods.map((item) => item.id)
+      ),
+    [filteredTaskItems, hasTaskFilters, mappableNeighborhoods]
+  );
+
+  const visibleNeighborhoods = useMemo(
+    () =>
+      mappableNeighborhoods.filter((item) => visibleNeighborhoodIds.has(item.id)),
+    [mappableNeighborhoods, visibleNeighborhoodIds]
+  );
+
+  const neighborhoodOptions = useMemo(
+    () => (hasTaskFilters ? visibleNeighborhoods : mappableNeighborhoods),
+    [hasTaskFilters, mappableNeighborhoods, visibleNeighborhoods]
+  );
+
+  const focusedNeighborhood = useMemo(
+    () =>
+      neighborhoodOptions.find((item) => String(item.id) === selectedNeighborhoodId),
+    [neighborhoodOptions, selectedNeighborhoodId]
+  );
+
+  const dashboardNeighborhoodSource = useMemo(
+    () => (hasTaskFilters ? visibleNeighborhoods : allNeighborhoods),
+    [allNeighborhoods, hasTaskFilters, visibleNeighborhoods]
+  );
+
+  const dashboardStats = useMemo(
+    () => ({
+      totalNeighborhoods: dashboardNeighborhoodSource.length,
+      todayTasks: dashboardNeighborhoodSource.reduce(
+        (total, item) => total + Number(item.today_tasks_count ?? 0),
+        0
+      ),
+    }),
+    [dashboardNeighborhoodSource]
+  );
+
+  const crimeStats = useMemo(
+    () =>
+      dashboardNeighborhoodSource.reduce(
+        (stats, item) => {
+          if (["yashil", "past"].includes(item.crime_level)) {
+            stats.green += 1;
+          }
+
+          if (["qizil", "yuqori"].includes(item.crime_level)) {
+            stats.red += 1;
+          }
+
+          if (["sariq", "o'rta"].includes(item.crime_level)) {
+            stats.yellow += 1;
+          }
+
+          return stats;
+        },
+        {
+          green: 0,
+          yellow: 0,
+          red: 0,
+        }
+      ),
+    [dashboardNeighborhoodSource]
+  );
+
+  useEffect(() => {
+    if (
+      selectedNeighborhoodId &&
+      !neighborhoodOptions.some(
+        (item) => String(item.id) === selectedNeighborhoodId
+      )
+    ) {
+      setSelectedNeighborhoodId("");
+    }
+  }, [neighborhoodOptions, selectedNeighborhoodId]);
+
+  const handleActionButtonClick = () => {
+    if (authChecking) {
+      return;
+    }
+
+    if (authenticated) {
+      setOpen(true);
+      return;
+    }
+
+    setLoginModalOpen(true);
+  };
+
+  const handleLoginSuccess = () => {
+    setAuthenticated(true);
+    setAuthChecking(false);
+    setLoginModalOpen(false);
+  };
+
+  const handleLogout = async () => {
+    setAuthChecking(true);
+
+    try {
+      await logoutUser();
+    } finally {
+      setOpen(false);
       setLoginModalOpen(false);
-    };
+      setAuthenticated(false);
+      setAuthChecking(false);
+    }
+  };
 
-  
+  const handleStartDateChange = (value) => {
+    setStartDate(value);
+
+    if (endDate && value && value > endDate) {
+      setEndDate(value);
+    }
+  };
+
+  const handleEndDateChange = (value) => {
+    setEndDate(value);
+
+    if (startDate && value && value < startDate) {
+      setStartDate(value);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSelectedNeighborhoodId("");
+    setSelectedDirectionId("");
+    setStartDate("");
+    setEndDate("");
+    setSelectedMahalla(null);
+  };
+
+  const handleNeighborhoodUpdated = (updatedNeighborhood) => {
+    const normalizedNeighborhood = normalizeNeighborhood(updatedNeighborhood);
+
+    setAllNeighborhoods((currentNeighborhoods) =>
+      currentNeighborhoods.map((item) =>
+        item.id === normalizedNeighborhood.id
+          ? {
+              ...item,
+              ...normalizedNeighborhood,
+            }
+          : item
+      )
+    );
+
+    setSelectedMahalla((currentNeighborhood) =>
+      currentNeighborhood?.id === normalizedNeighborhood.id
+        ? {
+            ...currentNeighborhood,
+            ...normalizedNeighborhood,
+          }
+        : currentNeighborhood
+    );
+  };
 
   return (
     <>
       <MapHeader />
-      <MapDashboard />
-      <WorkModal
-        open={open}
-        setOpen={setOpen}
-        />
-        <Button
+      <MapDashboard
+        authenticated={authenticated}
+        authChecking={authChecking}
+        onLogout={handleLogout}
+        totalNeighborhoods={dashboardStats.totalNeighborhoods}
+        todayTasks={dashboardStats.todayTasks}
+        neighborhoodOptions={neighborhoodOptions}
+        directionOptions={directionOptions}
+        selectedNeighborhoodId={selectedNeighborhoodId}
+        selectedDirectionId={selectedDirectionId}
+        onNeighborhoodChange={setSelectedNeighborhoodId}
+        onDirectionChange={setSelectedDirectionId}
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={handleStartDateChange}
+        onEndDateChange={handleEndDateChange}
+        onClearFilters={handleClearFilters}
+        hasActiveFilters={Boolean(
+          selectedNeighborhoodId || selectedDirectionId || startDate || endDate
+        )}
+        crimeStats={crimeStats}
+      />
+
+      <WorkModal open={open} setOpen={setOpen} />
+
+      <Button
         color="success"
         className="add-work-btn"
         onClick={handleActionButtonClick}
-        >
-        {authenticated ? "+ Kiritish" : "Kirish"}
-        </Button>
+        disabled={authChecking}
+      >
+        {authChecking
+          ? "Tekshirilmoqda..."
+          : authenticated
+            ? "+ Kiritish"
+            : "Kirish"}
+      </Button>
+
       <LoginModal
         isOpen={loginModalOpen}
         toggle={() => setLoginModalOpen((currentValue) => !currentValue)}
         onSuccess={handleLoginSuccess}
       />
-      <MapContainer center={position} zoom={12} style={{ height: "100vh", width: "100%" }}>
-        
-      <TileLayer
-        attribution="&copy; OpenStreetMap"
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
 
-        {/* Tuman polygon */}
-      <GeoJSON
+      <MapContainer
+        center={position}
+        zoom={12}
+        style={{ height: "100vh", width: "100%" }}
+      >
+        <MapViewportController
+          focusNeighborhood={focusedNeighborhood}
+          visibleNeighborhoods={visibleNeighborhoods}
+        />
+
+        <TileLayer
+          attribution="&copy; OpenStreetMap"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+
+        {geoData && (
+          <GeoJSON
             data={geoData}
             interactive={false}
             style={{
-                color: "#1e3a8a",
-                weight: 2,
-                fillColor: "#3b82f6",
-                fillOpacity: 0.45
+              color: "#1e3a8a",
+              weight: 2,
+              fillColor: "#3b82f6",
+              fillOpacity: 0.45,
             }}
-            />
+          />
+        )}
 
-     {mahallalar.map((item) => (
-
-        <Marker
-          key={item.id}
-          position={[item.lat, item.lng]}
-          icon={createIcon(item)}
-          eventHandlers={{
-            click: () => handleMarkerClick(item)
-          }}
-        />
-
-      ))}
-
+        {visibleNeighborhoods.map((item) => (
+          <Marker
+            key={`neighborhood-${item.id}`}
+            position={[item.lat, item.long]}
+            icon={createNeighborhoodPinIcon(
+              hasTaskFilters
+                ? taskCountsByNeighborhood[item.id] ?? 0
+                : item.total_tasks_count
+            )}
+            eventHandlers={{
+              click: () => setSelectedMahalla(item),
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+              {item.name}
+            </Tooltip>
+          </Marker>
+        ))}
       </MapContainer>
 
       <MahallaModal
         selectedMahalla={selectedMahalla}
         setSelectedMahalla={setSelectedMahalla}
-        />
+        authenticated={authenticated}
+        selectedDirectionId={selectedDirectionId}
+        startDate={startDate}
+        endDate={endDate}
+        onNeighborhoodUpdated={handleNeighborhoodUpdated}
+      />
     </>
   );
 }

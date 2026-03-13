@@ -1,208 +1,340 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-Modal,
-ModalHeader,
-ModalBody,
-ModalFooter,
-Button,
-Form,
-FormGroup,
-Label,
-Input,
-Row,
-Col
+  Alert,
+  Button,
+  Col,
+  Form,
+  FormGroup,
+  Input,
+  Label,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Row,
 } from "reactstrap";
+import { apiRequest, getAuthErrorMessage } from "../../utils/auth";
 
-function WorkModal({open,setOpen}){
+const MAX_IMAGES_PER_TASK = 4;
 
-const toggle=()=>setOpen(!open);
+function createEmptyWork() {
+  return {
+    text: "",
+    images: [],
+    imageMessage: "",
+  };
+}
 
-const [mahalla,setMahalla]=useState("");
-const [yonalish,setYonalish]=useState("");
-const [sana,setSana]=useState("");
+function WorkModal({ open, setOpen }) {
+  const toggle = () => setOpen(!open);
 
-const [works,setWorks]=useState([
-{text:"",images:[]}
-]);
+  const [mahalla, setMahalla] = useState("");
+  const [yonalish, setYonalish] = useState("");
+  const [sana, setSana] = useState("");
+  const [works, setWorks] = useState([createEmptyWork()]);
+  const [mahallalar, setMahallalar] = useState([]);
+  const [yonalishlar, setYonalishlar] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-const mahallalar=[
-"Bog'bon",
-"Gulzor",
-"Navbahor",
-"Do'stlik"
-];
+  const resetForm = () => {
+    setMahalla("");
+    setYonalish("");
+    setSana("");
+    setWorks([createEmptyWork()]);
+    setError("");
+  };
 
-const yonalishlar=[
-"Profilaktika",
-"Jinoyatchilik",
-"Yoshlar",
-"Ijtimoiy",
-"Ayollar",
-"Tadbirkorlik",
-"Migratsiya",
-"Ma'naviy",
-"Boshqa"
-];
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
 
-const addWork=()=>{
-setWorks([...works,{text:"",images:[]}]);
-};
+    let active = true;
 
-const updateText=(index,value)=>{
-const newWorks=[...works];
-newWorks[index].text=value;
-setWorks(newWorks);
-};
+    const loadOptions = async () => {
+      setLoadingOptions(true);
+      resetForm();
 
-const updateImages=(index,files)=>{
-const newWorks=[...works];
-newWorks[index].images=[...files];
-setWorks(newWorks);
-};
+      try {
+        const [neighborhoodResponse, directionResponse] = await Promise.all([
+          apiRequest("/neighborhoods"),
+          apiRequest("/directions"),
+        ]);
 
-const submitData=()=>{
+        if (!active) {
+          return;
+        }
 
-const data={
-mahalla,
-yonalish,
-sana,
-ishlar:works
-};
+        setMahallalar(neighborhoodResponse.data ?? []);
+        setYonalishlar(directionResponse.data ?? []);
+      } catch (requestError) {
+        if (active) {
+          setError(getAuthErrorMessage(requestError));
+        }
+      } finally {
+        if (active) {
+          setLoadingOptions(false);
+        }
+      }
+    };
 
-console.log(data);
+    loadOptions();
 
-setOpen(false);
+    return () => {
+      active = false;
+    };
+  }, [open]);
 
-};
+  const addWork = () => {
+    setWorks((currentWorks) => [...currentWorks, createEmptyWork()]);
+  };
 
-return(
+  const removeWork = (index) => {
+    setWorks((currentWorks) => currentWorks.filter((_, workIndex) => workIndex !== index));
+  };
 
-<Modal isOpen={open} toggle={toggle} size="lg">
+  const updateText = (index, value) => {
+    setWorks((currentWorks) =>
+      currentWorks.map((work, workIndex) =>
+        workIndex === index
+          ? {
+              ...work,
+              text: value,
+            }
+          : work
+      )
+    );
+  };
 
-<ModalHeader toggle={toggle}>
-Qilingan ishlarni kiritish
-</ModalHeader>
+  const updateImages = (index, fileList) => {
+    const files = Array.from(fileList ?? []);
+    const limitedFiles = files.slice(0, MAX_IMAGES_PER_TASK);
 
-<ModalBody>
+    setWorks((currentWorks) =>
+      currentWorks.map((work, workIndex) =>
+        workIndex === index
+          ? {
+              ...work,
+              images: limitedFiles,
+              imageMessage:
+                files.length > MAX_IMAGES_PER_TASK
+                  ? `Har bir task uchun ${MAX_IMAGES_PER_TASK} tagacha rasm yuklash mumkin.`
+                  : "",
+            }
+          : work
+      )
+    );
+  };
 
-<Form>
+  const validateForm = () => {
+    if (!mahalla || !yonalish || !sana) {
+      return "Mahalla, yo'nalish va sana maydonlarini to'ldiring.";
+    }
 
-<Row>
+    const emptyWorkIndex = works.findIndex((work) => work.text.trim() === "");
 
-<Col md="4">
-<FormGroup>
-<Label>Mahalla</Label>
-<Input
-type="select"
-value={mahalla}
-onChange={(e)=>setMahalla(e.target.value)}
->
+    if (emptyWorkIndex !== -1) {
+      return `${emptyWorkIndex + 1}-task uchun matn kiriting.`;
+    }
 
-<option value="">Tanlang</option>
+    const invalidImagesIndex = works.findIndex(
+      (work) => work.images.length > MAX_IMAGES_PER_TASK
+    );
 
-{mahallalar.map((m,i)=>(
-<option key={i}>{m}</option>
-))}
+    if (invalidImagesIndex !== -1) {
+      return `Har bir task uchun ${MAX_IMAGES_PER_TASK} tagacha rasm yuklash mumkin.`;
+    }
 
-</Input>
-</FormGroup>
-</Col>
+    return "";
+  };
 
-<Col md="4">
-<FormGroup>
-<Label>Yo'nalish</Label>
-<Input
-type="select"
-value={yonalish}
-onChange={(e)=>setYonalish(e.target.value)}
->
+  const submitData = async () => {
+    const validationError = validateForm();
 
-<option value="">Tanlang</option>
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
-{yonalishlar.map((y,i)=>(
-<option key={i}>{y}</option>
-))}
+    setSubmitting(true);
+    setError("");
 
-</Input>
-</FormGroup>
-</Col>
+    try {
+      const formData = new FormData();
 
-<Col md="4">
-<FormGroup>
-<Label>Sana</Label>
-<Input
-type="date"
-value={sana}
-onChange={(e)=>setSana(e.target.value)}
-/>
-</FormGroup>
-</Col>
+      works.forEach((work, index) => {
+        formData.append(`tasks[${index}][neighborhood_id]`, mahalla);
+        formData.append(`tasks[${index}][direction_id]`, yonalish);
+        formData.append(`tasks[${index}][date]`, sana);
+        formData.append(`tasks[${index}][text]`, work.text.trim());
 
-</Row>
+        work.images.forEach((image) => {
+          formData.append(`tasks[${index}][images][]`, image);
+        });
+      });
 
-<hr/>
+      await apiRequest("/tasks", {
+        method: "POST",
+        body: formData,
+        authenticated: true,
+        stopOnStatuses: [401, 422],
+      });
 
-{works.map((item,index)=>(
+      resetForm();
+      setOpen(false);
+    } catch (requestError) {
+      setError(getAuthErrorMessage(requestError));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-<div key={index} className="mb-4">
+  return (
+    <Modal isOpen={open} toggle={toggle} size="lg">
+      <ModalHeader toggle={toggle}>Qilingan ishlarni kiritish</ModalHeader>
 
-<FormGroup>
+      <ModalBody>
+        {error && <Alert color="danger">{error}</Alert>}
 
-<Label>Qilingan ish</Label>
+        <Form>
+          <Row>
+            <Col md="4">
+              <FormGroup>
+                <Label>Mahalla</Label>
+                <Input
+                  type="select"
+                  value={mahalla}
+                  onChange={(event) => setMahalla(event.target.value)}
+                  disabled={loadingOptions || submitting}
+                >
+                  <option value="">Tanlang</option>
 
-<Input
-type="textarea"
-rows="3"
-placeholder="Qilingan ishlarni yozing..."
-value={item.text}
-onChange={(e)=>updateText(index,e.target.value)}
-/>
+                  {mahallalar.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
+            </Col>
 
-</FormGroup>
+            <Col md="4">
+              <FormGroup>
+                <Label>Yo'nalish</Label>
+                <Input
+                  type="select"
+                  value={yonalish}
+                  onChange={(event) => setYonalish(event.target.value)}
+                  disabled={loadingOptions || submitting}
+                >
+                  <option value="">Tanlang</option>
 
-<FormGroup>
+                  {yonalishlar.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
+            </Col>
 
-<Label>Rasmlar</Label>
+            <Col md="4">
+              <FormGroup>
+                <Label>Sana</Label>
+                <Input
+                  type="date"
+                  value={sana}
+                  onChange={(event) => setSana(event.target.value)}
+                  disabled={submitting}
+                />
+              </FormGroup>
+            </Col>
+          </Row>
 
-<Input
-type="file"
-multiple
-onChange={(e)=>updateImages(index,e.target.files)}
-/>
+          <hr />
 
-</FormGroup>
+          {works.map((item, index) => (
+            <div key={index} className="mb-4">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <strong>{index + 1}-task</strong>
 
-</div>
+                {works.length > 1 && (
+                  <Button
+                    type="button"
+                    color="danger"
+                    outline
+                    size="sm"
+                    onClick={() => removeWork(index)}
+                    disabled={submitting}
+                  >
+                    O'chirish
+                  </Button>
+                )}
+              </div>
 
-))}
+              <FormGroup>
+                <Label>Qilingan ish</Label>
+                <Input
+                  type="textarea"
+                  rows="3"
+                  placeholder="Qilingan ishlarni yozing..."
+                  value={item.text}
+                  onChange={(event) => updateText(index, event.target.value)}
+                  disabled={submitting}
+                />
+              </FormGroup>
 
-<Button
-color="success"
-onClick={addWork}
->
-+ Yana ish qo'shish
-</Button>
+              <FormGroup>
+                <Label>Rasmlar</Label>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(event) => updateImages(index, event.target.files)}
+                  disabled={submitting}
+                />
 
-</Form>
+                <div className="small text-muted mt-2">
+                  {item.images.length} / {MAX_IMAGES_PER_TASK} rasm tanlandi
+                </div>
 
-</ModalBody>
+                {item.images.length > 0 && (
+                  <div className="small text-muted">
+                    {item.images.map((image) => image.name).join(", ")}
+                  </div>
+                )}
 
-<ModalFooter>
+                {item.imageMessage && (
+                  <div className="small text-danger mt-1">{item.imageMessage}</div>
+                )}
+              </FormGroup>
+            </div>
+          ))}
 
-<Button color="secondary" onClick={toggle}>
-Bekor qilish
-</Button>
+          <Button
+            type="button"
+            color="success"
+            onClick={addWork}
+            disabled={submitting || loadingOptions}
+          >
+            + Yana ish qo'shish
+          </Button>
+        </Form>
+      </ModalBody>
 
-<Button color="primary" onClick={submitData}>
-Yuborish
-</Button>
+      <ModalFooter>
+        <Button color="secondary" onClick={toggle} disabled={submitting}>
+          Bekor qilish
+        </Button>
 
-</ModalFooter>
-
-</Modal>
-
-);
-
+        <Button color="primary" onClick={submitData} disabled={submitting || loadingOptions}>
+          {submitting ? "Yuborilmoqda..." : "Yuborish"}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  );
 }
 
 export default WorkModal;

@@ -32,4 +32,18 @@ class AuthController extends Controller
             'token' => $token,
         ]);
     }
+
+    public function me(Request $request): JsonResponse
+    {
+        return response()->json($request->user());
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()?->delete();
+
+        return response()->json([
+            'message' => "Tizimdan chiqildi.",
+        ]);
+    }
 }
