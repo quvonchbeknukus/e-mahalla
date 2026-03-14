@@ -64,7 +64,7 @@ class NeighborhoodController extends Controller
 
         return $request->validate([
             'name' => [$required, 'string', 'max:100'],
-            'crime_level' => [$required, 'string', Rule::in(['qizil', 'sariq', 'yashil', 'yuqori', "o'rta", 'past', 'bosh'])],
+            'crime_level' => [$required, 'string', Rule::in(['qizil', 'sariq', 'yashil'])],
             'lat' => [$required, 'numeric'],
             'long' => [$required, 'numeric'],
             'neighborhood_chairman' => [$required, 'string', 'max:100'],

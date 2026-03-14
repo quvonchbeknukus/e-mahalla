@@ -3,10 +3,18 @@
   align-items:center;
   justify-content:space-between;
   gap:12px;
+  flex-wrap:wrap;
   padding-right:36px;
 }
 
-.mahalla-edit-btn{
+.mahalla-modal-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.mahalla-action-btn{
   flex-shrink:0;
   border-radius:999px;
   padding:6px 14px;
@@ -65,13 +73,56 @@
   box-shadow:0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
-.work-meta{
+.work-block-header{
   display:flex;
+  align-items:flex-start;
   justify-content:space-between;
   gap:12px;
+  margin-bottom:10px;
+}
+
+.work-meta{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
   font-size:13px;
   color:#64748b;
-  margin-bottom:10px;
+}
+
+.work-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+
+.work-icon-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:34px;
+  height:34px;
+  border:1px solid #cbd5e1;
+  border-radius:999px;
+  background:#fff;
+  color:#0f172a;
+  transition:transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.work-icon-btn:hover:not(:disabled){
+  transform:translateY(-1px);
+  border-color:#2563eb;
+  color:#2563eb;
+}
+
+.work-icon-btn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.work-icon-btn--danger:hover:not(:disabled){
+  border-color:#dc2626;
+  color:#dc2626;
 }
 
 .work-text{
@@ -96,6 +147,15 @@
 
 .work-image-link{
   display:block;
+}
+
+.work-image-button{
+  width:100%;
+  padding:0;
+  border:none;
+  background:none;
+  cursor:zoom-in;
+  text-align:left;
 }
 
 .work-image{

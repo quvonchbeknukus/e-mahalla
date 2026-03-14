@@ -68,6 +68,51 @@ function createNeighborhoodPinIcon(taskCount) {
   });
 }
 
+function getTodayDateKey() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function createMarkerPositionMap(neighborhoods) {
+  const groupedNeighborhoods = neighborhoods.reduce((groups, item) => {
+    const key = `${item.lat}:${item.long}`;
+
+    if (!groups[key]) {
+      groups[key] = [];
+    }
+
+    groups[key].push(item);
+
+    return groups;
+  }, {});
+
+  return Object.values(groupedNeighborhoods).reduce((positions, group) => {
+    const sortedGroup = [...group].sort((firstItem, secondItem) => firstItem.id - secondItem.id);
+
+    if (sortedGroup.length === 1) {
+      positions[sortedGroup[0].id] = [sortedGroup[0].lat, sortedGroup[0].long];
+      return positions;
+    }
+
+    const radius = 0.00018;
+
+    sortedGroup.forEach((item, index) => {
+      const angle = (2 * Math.PI * index) / sortedGroup.length;
+
+      positions[item.id] = [
+        item.lat + Math.sin(angle) * radius,
+        item.long + Math.cos(angle) * radius,
+      ];
+    });
+
+    return positions;
+  }, {});
+}
+
 function MapViewportController({ focusNeighborhood, visibleNeighborhoods }) {
   const map = useMap();
 
@@ -134,6 +179,7 @@ function Map() {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [authenticated, setAuthenticated] = useState(() => isAuthenticated());
   const [authChecking, setAuthChecking] = useState(true);
+  const todayDateKey = getTodayDateKey();
 
   useEffect(() => {
     let active = true;
@@ -275,6 +321,11 @@ function Map() {
     [mappableNeighborhoods, visibleNeighborhoodIds]
   );
 
+  const markerPositions = useMemo(
+    () => createMarkerPositionMap(visibleNeighborhoods),
+    [visibleNeighborhoods]
+  );
+
   const neighborhoodOptions = useMemo(
     () => (hasTaskFilters ? visibleNeighborhoods : mappableNeighborhoods),
     [hasTaskFilters, mappableNeighborhoods, visibleNeighborhoods]
@@ -409,14 +460,82 @@ function Map() {
           : item
       )
     );
+  };
 
-    setSelectedMahalla((currentNeighborhood) =>
-      currentNeighborhood?.id === normalizedNeighborhood.id
-        ? {
-            ...currentNeighborhood,
-            ...normalizedNeighborhood,
-          }
-        : currentNeighborhood
+  const handleNeighborhoodCreated = (createdNeighborhood) => {
+    const normalizedNeighborhood = normalizeNeighborhood(createdNeighborhood);
+
+    setAllNeighborhoods((currentNeighborhoods) => [
+      normalizedNeighborhood,
+      ...currentNeighborhoods.filter((item) => item.id !== normalizedNeighborhood.id),
+    ]);
+  };
+
+  const handleNeighborhoodDeleted = (deletedNeighborhoodId) => {
+    setAllNeighborhoods((currentNeighborhoods) =>
+      currentNeighborhoods.filter((item) => item.id !== deletedNeighborhoodId)
+    );
+    setTaskItems((currentTaskItems) =>
+      currentTaskItems.filter((item) => item.neighborhood_id !== deletedNeighborhoodId)
+    );
+    setSelectedNeighborhoodId((currentNeighborhoodId) =>
+      String(deletedNeighborhoodId) === currentNeighborhoodId
+        ? ""
+        : currentNeighborhoodId
+    );
+  };
+
+  const handleTaskUpdated = (updatedTask, previousTask) => {
+    setTaskItems((currentTaskItems) =>
+      currentTaskItems.map((item) =>
+        item.id === updatedTask.id ? normalizeTaskItem(updatedTask) : item
+      )
+    );
+
+    if (!previousTask || previousTask.date === updatedTask.date) {
+      return;
+    }
+
+    setAllNeighborhoods((currentNeighborhoods) =>
+      currentNeighborhoods.map((item) => {
+        if (item.id !== updatedTask.neighborhood_id) {
+          return item;
+        }
+
+        const currentTodayCount = Number(item.today_tasks_count ?? 0);
+        const nextTodayCount =
+          currentTodayCount +
+          (updatedTask.date === todayDateKey ? 1 : 0) -
+          (previousTask.date === todayDateKey ? 1 : 0);
+
+        return {
+          ...item,
+          today_tasks_count: Math.max(0, nextTodayCount),
+        };
+      })
+    );
+  };
+
+  const handleTaskDeleted = (task) => {
+    setTaskItems((currentTaskItems) =>
+      currentTaskItems.filter((item) => item.id !== task.id)
+    );
+
+    setAllNeighborhoods((currentNeighborhoods) =>
+      currentNeighborhoods.map((item) => {
+        if (item.id !== task.neighborhood_id) {
+          return item;
+        }
+
+        return {
+          ...item,
+          total_tasks_count: Math.max(0, Number(item.total_tasks_count ?? 0) - 1),
+          today_tasks_count:
+            task.date === todayDateKey
+              ? Math.max(0, Number(item.today_tasks_count ?? 0) - 1)
+              : Number(item.today_tasks_count ?? 0),
+        };
+      })
     );
   };
 
@@ -498,7 +617,7 @@ function Map() {
         {visibleNeighborhoods.map((item) => (
           <Marker
             key={`neighborhood-${item.id}`}
-            position={[item.lat, item.long]}
+            position={markerPositions[item.id] ?? [item.lat, item.long]}
             icon={createNeighborhoodPinIcon(
               hasTaskFilters
                 ? taskCountsByNeighborhood[item.id] ?? 0
@@ -523,6 +642,11 @@ function Map() {
         startDate={startDate}
         endDate={endDate}
         onNeighborhoodUpdated={handleNeighborhoodUpdated}
+        onNeighborhoodCreated={handleNeighborhoodCreated}
+        onNeighborhoodDeleted={handleNeighborhoodDeleted}
+        directionOptions={directionOptions}
+        onTaskUpdated={handleTaskUpdated}
+        onTaskDeleted={handleTaskDeleted}
       />
     </>
   );

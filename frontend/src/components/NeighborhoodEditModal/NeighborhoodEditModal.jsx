@@ -19,10 +19,6 @@ const CRIME_LEVEL_OPTIONS = [
   { value: "yashil", label: "Yashil mahalla" },
   { value: "sariq", label: "Sariq mahalla" },
   { value: "qizil", label: "Qizil mahalla" },
-  { value: "past", label: "Past" },
-  { value: "o'rta", label: "O'rta" },
-  { value: "yuqori", label: "Yuqori" },
-  { value: "bosh", label: "Boshqa" },
 ];
 
 function createFormState(neighborhood) {
@@ -38,7 +34,14 @@ function createFormState(neighborhood) {
   };
 }
 
-function NeighborhoodEditModal({ isOpen, toggle, neighborhood, onSuccess }) {
+function NeighborhoodEditModal({
+  isOpen,
+  toggle,
+  neighborhood,
+  onSuccess,
+  mode = "edit",
+}) {
+  const isCreateMode = mode === "create";
   const [formData, setFormData] = useState(() => createFormState(neighborhood));
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -63,7 +66,7 @@ function NeighborhoodEditModal({ isOpen, toggle, neighborhood, onSuccess }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!neighborhood?.id) {
+    if (!isCreateMode && !neighborhood?.id) {
       return;
     }
 
@@ -71,16 +74,19 @@ function NeighborhoodEditModal({ isOpen, toggle, neighborhood, onSuccess }) {
     setError("");
 
     try {
-      const response = await apiRequest(`/neighborhoods/${neighborhood.id}`, {
-        method: "PUT",
-        body: {
-          ...formData,
-          lat: String(formData.lat).trim(),
-          long: String(formData.long).trim(),
-        },
-        authenticated: true,
-        stopOnStatuses: [401, 422],
-      });
+      const response = await apiRequest(
+        isCreateMode ? "/neighborhoods" : `/neighborhoods/${neighborhood.id}`,
+        {
+          method: isCreateMode ? "POST" : "PUT",
+          body: {
+            ...formData,
+            lat: String(formData.lat).trim(),
+            long: String(formData.long).trim(),
+          },
+          authenticated: true,
+          stopOnStatuses: [401, 422],
+        }
+      );
 
       onSuccess?.(response.data);
     } catch (requestError) {
@@ -90,9 +96,21 @@ function NeighborhoodEditModal({ isOpen, toggle, neighborhood, onSuccess }) {
     }
   };
 
+  const modalTitle = isCreateMode
+    ? "Yangi mahalla qo'shish"
+    : "Mahallani tahrirlash";
+
+  const submitLabel = submitting
+    ? isCreateMode
+      ? "Qo'shilmoqda..."
+      : "Saqlanmoqda..."
+    : isCreateMode
+      ? "Qo'shish"
+      : "Saqlash";
+
   return (
     <Modal isOpen={isOpen} toggle={toggle} size="lg">
-      <ModalHeader toggle={toggle}>Mahallani tahrirlash</ModalHeader>
+      <ModalHeader toggle={toggle}>{modalTitle}</ModalHeader>
 
       <Form onSubmit={handleSubmit}>
         <ModalBody>
@@ -245,7 +263,7 @@ function NeighborhoodEditModal({ isOpen, toggle, neighborhood, onSuccess }) {
           </Button>
 
           <Button color="primary" type="submit" disabled={submitting}>
-            {submitting ? "Saqlanmoqda..." : "Saqlash"}
+            {submitLabel}
           </Button>
         </ModalFooter>
       </Form>
