@@ -125,6 +125,13 @@ function MapDashboard({
                   <span>{item.label}</span>
                   <small>{item.caption}</small>
                   <b>{item.value}</b>
+                  {item.secondaryValue !== null &&
+                  item.secondaryValue !== undefined ? (
+                    <div className="summary-card__extra">
+                      <small>{item.secondaryCaption}</small>
+                      <strong>{item.secondaryValue}</strong>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

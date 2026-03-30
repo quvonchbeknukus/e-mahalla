@@ -542,6 +542,8 @@ function Map() {
         label: "Yashil mahalla",
         caption,
         value: activeCrimeStats.green,
+        secondaryCaption: selectedDirectionId ? "Mahallalar soni" : "",
+        secondaryValue: selectedDirectionId ? neighborhoodCrimeStats.green : null,
         tone: "green",
       },
       {
@@ -549,6 +551,8 @@ function Map() {
         label: "Sariq mahalla",
         caption,
         value: activeCrimeStats.yellow,
+        secondaryCaption: selectedDirectionId ? "Mahallalar soni" : "",
+        secondaryValue: selectedDirectionId ? neighborhoodCrimeStats.yellow : null,
         tone: "yellow",
       },
       {
@@ -556,6 +560,8 @@ function Map() {
         label: "Qizil mahalla",
         caption,
         value: activeCrimeStats.red,
+        secondaryCaption: selectedDirectionId ? "Mahallalar soni" : "",
+        secondaryValue: selectedDirectionId ? neighborhoodCrimeStats.red : null,
         tone: "red",
       },
     ];

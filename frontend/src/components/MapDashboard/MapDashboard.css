@@ -145,6 +145,24 @@
   font-weight:700;
 }
 
+.summary-card__extra{
+  margin-top:10px;
+  padding-top:8px;
+  border-top:1px solid rgba(148,163,184,.14);
+}
+
+.summary-card__extra small{
+  margin-top:0;
+}
+
+.summary-card__extra strong{
+  display:block;
+  margin-top:4px;
+  font-size:15px;
+  font-weight:700;
+  color:#f8fafc;
+}
+
 .summary-card--green b{color:#22c55e}
 .summary-card--yellow b{color:#facc15}
 .summary-card--red b{color:#ef4444}
