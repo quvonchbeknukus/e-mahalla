@@ -304,7 +304,7 @@ function MahallaModal({
                   Tahrirlash
                 </Button>
 
-                <Button
+                {/* <Button
                   type="button"
                   color="danger"
                   size="sm"
@@ -313,7 +313,7 @@ function MahallaModal({
                   disabled={deleteSubmitting}
                 >
                   {deleteSubmitting ? "O'chirilmoqda..." : "O'chirish"}
-                </Button>
+                </Button> */}
               </div>
             )}
           </div>
@@ -374,7 +374,7 @@ function MahallaModal({
                           <EditIcon />
                         </button>
 
-                        <button
+                        {/* <button
                           type="button"
                           className="work-icon-btn work-icon-btn--danger"
                           onClick={() => handleTaskDelete(item)}
@@ -383,7 +383,7 @@ function MahallaModal({
                           title="Taskni o'chirish"
                         >
                           <DeleteIcon />
-                        </button>
+                        </button> */}
                       </div>
                     )}
                   </div>

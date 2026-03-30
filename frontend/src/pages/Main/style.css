@@ -43,11 +43,26 @@
   position: relative;
   width: 30px;
   height: 30px;
-  background: linear-gradient(180deg, #ff6b6b, #d31616);
-  border: 2px solid #b90f0f;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
+}
+
+.neighborhood-pin--red{
+  background: linear-gradient(180deg, #ff6b6b, #d31616);
+  border: 2px solid #b90f0f;
   box-shadow: 0 8px 18px rgba(185, 15, 15, 0.28);
+}
+
+.neighborhood-pin--yellow{
+  background: linear-gradient(180deg, #fde68a, #f59e0b);
+  border: 2px solid #d97706;
+  box-shadow: 0 8px 18px rgba(245, 158, 11, 0.32);
+}
+
+.neighborhood-pin--green{
+  background: linear-gradient(180deg, #86efac, #16a34a);
+  border: 2px solid #15803d;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.3);
 }
 
 .neighborhood-pin__inner{
@@ -77,6 +92,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 12px rgba(239, 68, 68, 0.35);
   transform: rotate(45deg);
+}
+
+.neighborhood-pin__badge--red{
+  background: #ef4444;
+  border: 2px solid #fff3f3;
+  box-shadow: 0 5px 12px rgba(239, 68, 68, 0.35);
+}
+
+.neighborhood-pin__badge--yellow{
+  background: #f59e0b;
+  border: 2px solid #fff7d6;
+  box-shadow: 0 5px 12px rgba(245, 158, 11, 0.35);
+}
+
+.neighborhood-pin__badge--green{
+  background: #16a34a;
+  border: 2px solid #ecfdf3;
+  box-shadow: 0 5px 12px rgba(22, 163, 74, 0.35);
 }

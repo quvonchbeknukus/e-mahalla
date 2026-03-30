@@ -1,6 +1,7 @@
 export const AUTH_TOKEN_KEY = "emap_api_token";
 export const AUTH_USER_KEY = "emap_api_user";
 export const AUTH_BASE_URL_KEY = "emap_api_base_url";
+export const DEFAULT_API_BASE_URL = "https://backend.xavfsiz-mahalla.uz/api";
 
 const LEGACY_AUTH_KEYS = ["token", "emap_session_token"];
 
@@ -21,18 +22,27 @@ function cleanupLegacyAuth() {
 }
 
 function normalizeBaseUrl(baseUrl) {
-  return baseUrl.replace(/\/+$/, "");
+  return typeof baseUrl === "string" ? baseUrl.trim().replace(/\/+$/, "") : "";
+}
+
+function getConfiguredBaseUrl() {
+  return normalizeBaseUrl(
+    process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL
+  );
 }
 
 function getApiBaseCandidates() {
-  const customBaseUrl = process.env.REACT_APP_API_BASE_URL?.trim();
+  const configuredBaseUrl = getConfiguredBaseUrl();
   const protocol = window.location.protocol || "http:";
   const hostname = window.location.hostname || "localhost";
+
+  if (configuredBaseUrl) {
+    return [configuredBaseUrl];
+  }
 
   return Array.from(
     new Set(
       [
-        customBaseUrl,
         `${protocol}//${hostname}/e-mahalla/public/api`,
         `${protocol}//${hostname}:8000/api`,
         `${protocol}//${hostname}/api`,
@@ -49,9 +59,67 @@ function getStoredBaseUrl() {
 }
 
 function getRequestBaseUrls() {
+  const configuredBaseUrl = getConfiguredBaseUrl();
+
+  if (configuredBaseUrl) {
+    return [configuredBaseUrl];
+  }
+
   return Array.from(
     new Set([getStoredBaseUrl(), ...getApiBaseCandidates()].filter(Boolean))
   );
+}
+
+function getBaseOrigin(baseUrl) {
+  try {
+    return new URL(normalizeBaseUrl(baseUrl)).origin;
+  } catch (error) {
+    return "";
+  }
+}
+
+function resolveAbsoluteUrl(value, baseUrl) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const normalizedValue = value.trim();
+
+  if (
+    !normalizedValue ||
+    /^(?:[a-z]+:)?\/\//i.test(normalizedValue) ||
+    normalizedValue.startsWith("data:") ||
+    normalizedValue.startsWith("blob:")
+  ) {
+    return normalizedValue;
+  }
+
+  const origin = getBaseOrigin(baseUrl);
+
+  if (!origin) {
+    return normalizedValue;
+  }
+
+  return `${origin}${normalizedValue.startsWith("/") ? normalizedValue : `/${normalizedValue}`}`;
+}
+
+function normalizeApiPayload(payload, baseUrl) {
+  if (Array.isArray(payload)) {
+    return payload.map((item) => normalizeApiPayload(item, baseUrl));
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return payload;
+  }
+
+  return Object.entries(payload).reduce((result, [key, value]) => {
+    result[key] =
+      key === "image_url"
+        ? resolveAbsoluteUrl(value, baseUrl)
+        : normalizeApiPayload(value, baseUrl);
+
+    return result;
+  }, {});
 }
 
 function parseStoredUser() {
@@ -116,7 +184,7 @@ async function requestJson(baseUrl, path, options = {}) {
     throw new ApiError(message, response.status, payload);
   }
 
-  return payload;
+  return normalizeApiPayload(payload, baseUrl);
 }
 
 async function requestWithFallback(path, options = {}, stopOnStatuses = []) {

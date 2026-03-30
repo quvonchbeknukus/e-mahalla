@@ -23,6 +23,36 @@ import {
 } from "../../utils/auth";
 import "./style.css";
 
+function getCrimeLevelKey(crimeLevel) {
+  if (!crimeLevel) {
+    return null;
+  }
+
+  const normalizedCrimeLevel = String(crimeLevel).trim().toLowerCase();
+
+  if (["yashil", "past"].includes(normalizedCrimeLevel)) {
+    return "green";
+  }
+
+  if (["sariq", "o'rta", "orta"].includes(normalizedCrimeLevel)) {
+    return "yellow";
+  }
+
+  if (["qizil", "yuqori"].includes(normalizedCrimeLevel)) {
+    return "red";
+  }
+
+  return null;
+}
+
+function createEmptyCrimeStats() {
+  return {
+    green: 0,
+    yellow: 0,
+    red: 0,
+  };
+}
+
 function normalizeNeighborhood(item) {
   const lat = Number(item.lat);
   const long = Number(item.long);
@@ -54,13 +84,13 @@ function normalizeTaskItem(item) {
   };
 }
 
-function createNeighborhoodPinIcon(taskCount) {
+function createNeighborhoodPinIcon(taskCount, crimeLevelKey = "red") {
   return L.divIcon({
     className: "neighborhood-pin-icon",
     html: `
-      <div class="neighborhood-pin">
+      <div class="neighborhood-pin neighborhood-pin--${crimeLevelKey}">
         <span class="neighborhood-pin__inner"></span>
-        <span class="neighborhood-pin__badge">${taskCount}</span>
+        <span class="neighborhood-pin__badge neighborhood-pin__badge--${crimeLevelKey}">${taskCount}</span>
       </div>
     `,
     iconSize: [34, 50],
@@ -271,16 +301,9 @@ function Map() {
     [allNeighborhoods]
   );
 
-  const filteredTaskItems = useMemo(
+  const dateFilteredTaskItems = useMemo(
     () =>
       taskItems.filter((item) => {
-        if (
-          selectedDirectionId &&
-          String(item.direction_id) !== selectedDirectionId
-        ) {
-          return false;
-        }
-
         if (startDate && item.date < startDate) {
           return false;
         }
@@ -291,10 +314,35 @@ function Map() {
 
         return true;
       }),
-    [endDate, selectedDirectionId, startDate, taskItems]
+    [endDate, startDate, taskItems]
+  );
+
+  const filteredTaskItems = useMemo(
+    () =>
+      dateFilteredTaskItems.filter((item) => {
+        if (
+          selectedDirectionId &&
+          String(item.direction_id) !== selectedDirectionId
+        ) {
+          return false;
+        }
+
+        return true;
+      }),
+    [dateFilteredTaskItems, selectedDirectionId]
   );
 
   const hasTaskFilters = Boolean(selectedDirectionId || startDate || endDate);
+
+  const selectedNeighborhoodTaskItems = useMemo(
+    () =>
+      selectedNeighborhoodId
+        ? dateFilteredTaskItems.filter(
+            (item) => String(item.neighborhood_id) === selectedNeighborhoodId
+          )
+        : [],
+    [dateFilteredTaskItems, selectedNeighborhoodId]
+  );
 
   const taskCountsByNeighborhood = useMemo(
     () =>
@@ -306,13 +354,20 @@ function Map() {
   );
 
   const visibleNeighborhoodIds = useMemo(
-    () =>
-      new Set(
+    () => {
+      const ids = new Set(
         hasTaskFilters
           ? filteredTaskItems.map((item) => item.neighborhood_id)
           : mappableNeighborhoods.map((item) => item.id)
-      ),
-    [filteredTaskItems, hasTaskFilters, mappableNeighborhoods]
+      );
+
+      if (selectedNeighborhoodId) {
+        ids.add(Number(selectedNeighborhoodId));
+      }
+
+      return ids;
+    },
+    [filteredTaskItems, hasTaskFilters, mappableNeighborhoods, selectedNeighborhoodId]
   );
 
   const visibleNeighborhoods = useMemo(
@@ -327,8 +382,8 @@ function Map() {
   );
 
   const neighborhoodOptions = useMemo(
-    () => (hasTaskFilters ? visibleNeighborhoods : mappableNeighborhoods),
-    [hasTaskFilters, mappableNeighborhoods, visibleNeighborhoods]
+    () => mappableNeighborhoods,
+    [mappableNeighborhoods]
   );
 
   const focusedNeighborhood = useMemo(
@@ -342,43 +397,189 @@ function Map() {
     [allNeighborhoods, hasTaskFilters, visibleNeighborhoods]
   );
 
+  const dashboardTaskItems = useMemo(
+    () =>
+      dateFilteredTaskItems.filter((item) => {
+        if (
+          selectedNeighborhoodId &&
+          String(item.neighborhood_id) !== selectedNeighborhoodId
+        ) {
+          return false;
+        }
+
+        if (
+          selectedDirectionId &&
+          String(item.direction_id) !== selectedDirectionId
+        ) {
+          return false;
+        }
+
+        return true;
+      }),
+    [dateFilteredTaskItems, selectedDirectionId, selectedNeighborhoodId]
+  );
+
   const dashboardStats = useMemo(
     () => ({
       totalNeighborhoods: dashboardNeighborhoodSource.length,
+      totalTasks: dashboardTaskItems.length,
       todayTasks: dashboardNeighborhoodSource.reduce(
         (total, item) => total + Number(item.today_tasks_count ?? 0),
         0
       ),
     }),
-    [dashboardNeighborhoodSource]
+    [dashboardNeighborhoodSource, dashboardTaskItems]
   );
 
-  const crimeStats = useMemo(
+  const neighborhoodCrimeStats = useMemo(
     () =>
       dashboardNeighborhoodSource.reduce(
         (stats, item) => {
-          if (["yashil", "past"].includes(item.crime_level)) {
-            stats.green += 1;
-          }
+          const crimeLevelKey = getCrimeLevelKey(item.crime_level);
 
-          if (["qizil", "yuqori"].includes(item.crime_level)) {
-            stats.red += 1;
-          }
-
-          if (["sariq", "o'rta"].includes(item.crime_level)) {
-            stats.yellow += 1;
+          if (crimeLevelKey) {
+            stats[crimeLevelKey] += 1;
           }
 
           return stats;
         },
-        {
-          green: 0,
-          yellow: 0,
-          red: 0,
-        }
+        createEmptyCrimeStats()
       ),
     [dashboardNeighborhoodSource]
   );
+
+  const neighborhoodsById = useMemo(
+    () =>
+      allNeighborhoods.reduce((lookup, item) => {
+        lookup[item.id] = item;
+        return lookup;
+      }, {}),
+    [allNeighborhoods]
+  );
+
+  const crimeLevelByNeighborhoodId = useMemo(
+    () =>
+      allNeighborhoods.reduce((lookup, item) => {
+        lookup[item.id] = getCrimeLevelKey(item.crime_level);
+        return lookup;
+      }, {}),
+    [allNeighborhoods]
+  );
+
+  const directionCrimeStats = useMemo(
+    () =>
+      filteredTaskItems.reduce(
+        (stats, item) => {
+          const crimeLevelKey = crimeLevelByNeighborhoodId[item.neighborhood_id];
+
+          if (crimeLevelKey) {
+            stats[crimeLevelKey] += 1;
+          }
+
+          return stats;
+        },
+        createEmptyCrimeStats()
+      ),
+    [crimeLevelByNeighborhoodId, filteredTaskItems]
+  );
+
+  const selectedNeighborhoodData = useMemo(
+    () =>
+      selectedNeighborhoodId
+        ? neighborhoodsById[Number(selectedNeighborhoodId)] ?? null
+        : null,
+    [neighborhoodsById, selectedNeighborhoodId]
+  );
+
+  const directionTaskCounts = useMemo(
+    () => {
+      const source = selectedNeighborhoodId
+        ? selectedNeighborhoodTaskItems
+        : dateFilteredTaskItems;
+
+      return source.reduce((counts, item) => {
+        counts[item.direction_id] = (counts[item.direction_id] ?? 0) + 1;
+        return counts;
+      }, {});
+    },
+    [dateFilteredTaskItems, selectedNeighborhoodId, selectedNeighborhoodTaskItems]
+  );
+
+  const directionStats = useMemo(
+    () =>
+      directionOptions.map((item) => ({
+        id: item.id,
+        name: item.name,
+        count: directionTaskCounts[item.id] ?? 0,
+      })),
+    [directionOptions, directionTaskCounts]
+  );
+
+  const summaryCards = useMemo(() => {
+    if (selectedNeighborhoodData) {
+      return [
+        {
+          key: `neighborhood-${selectedNeighborhoodData.id}`,
+          label: selectedNeighborhoodData.name,
+          caption: "Jami tadbirlar soni",
+          value: selectedNeighborhoodTaskItems.length,
+          tone: "info",
+          fullWidth: true,
+        },
+      ];
+    }
+
+    const activeCrimeStats = selectedDirectionId
+      ? directionCrimeStats
+      : neighborhoodCrimeStats;
+    const caption = selectedDirectionId
+      ? "Tadbirlar soni"
+      : "Mahallalar soni";
+
+    return [
+      {
+        key: "green",
+        label: "Yashil mahalla",
+        caption,
+        value: activeCrimeStats.green,
+        tone: "green",
+      },
+      {
+        key: "yellow",
+        label: "Sariq mahalla",
+        caption,
+        value: activeCrimeStats.yellow,
+        tone: "yellow",
+      },
+      {
+        key: "red",
+        label: "Qizil mahalla",
+        caption,
+        value: activeCrimeStats.red,
+        tone: "red",
+      },
+    ];
+  }, [
+    directionCrimeStats,
+    neighborhoodCrimeStats,
+    selectedDirectionId,
+    selectedNeighborhoodData,
+    selectedNeighborhoodTaskItems.length,
+  ]);
+
+  const summaryTitle = selectedNeighborhoodData
+    ? "Tanlangan mahalla"
+    : selectedDirectionId
+      ? "Yo'nalish bo'yicha taqsimot"
+      : "Mahalla toifalari";
+
+  const directionStatsTitle = selectedNeighborhoodData
+    ? "Tanlangan mahallada yo'nalishlar"
+    : "Yo'nalishlar bo'yicha jami";
+
+  const directionStatsSubtitle = selectedNeighborhoodData
+    ? `${selectedNeighborhoodData.name} mahallasidagi tadbirlar`
+    : "Har yo'nalish bo'yicha o'tkazilgan tadbirlar soni";
 
   useEffect(() => {
     if (
@@ -547,6 +748,7 @@ function Map() {
         authChecking={authChecking}
         onLogout={handleLogout}
         totalNeighborhoods={dashboardStats.totalNeighborhoods}
+        totalTasks={dashboardStats.totalTasks}
         todayTasks={dashboardStats.todayTasks}
         neighborhoodOptions={neighborhoodOptions}
         directionOptions={directionOptions}
@@ -562,7 +764,11 @@ function Map() {
         hasActiveFilters={Boolean(
           selectedNeighborhoodId || selectedDirectionId || startDate || endDate
         )}
-        crimeStats={crimeStats}
+        summaryTitle={summaryTitle}
+        summaryCards={summaryCards}
+        directionStatsTitle={directionStatsTitle}
+        directionStatsSubtitle={directionStatsSubtitle}
+        directionStats={directionStats}
       />
 
       <WorkModal open={open} setOpen={setOpen} />
@@ -621,7 +827,8 @@ function Map() {
             icon={createNeighborhoodPinIcon(
               hasTaskFilters
                 ? taskCountsByNeighborhood[item.id] ?? 0
-                : item.total_tasks_count
+                : item.total_tasks_count,
+              getCrimeLevelKey(item.crime_level) ?? "red"
             )}
             eventHandlers={{
               click: () => setSelectedMahalla(item),
