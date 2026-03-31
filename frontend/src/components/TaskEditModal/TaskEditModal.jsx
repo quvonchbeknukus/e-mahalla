@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Button,
@@ -14,10 +14,19 @@ import {
   Row,
 } from "reactstrap";
 import { apiRequest, getAuthErrorMessage } from "../../utils/auth";
+import {
+  filterValidTaskImages,
+  hasOversizedTaskImages,
+  MAX_IMAGES_PER_TASK,
+  optimizeTaskImages,
+  TASK_IMAGE_AUTO_OPTIMIZE_NOTE,
+  TASK_IMAGE_PROCESSING_MESSAGE,
+  TASK_IMAGE_READY_MESSAGE,
+  TASK_IMAGE_SIZE_ERROR_MESSAGE,
+  TASK_IMAGE_WAIT_MESSAGE,
+} from "../../utils/taskImages";
 import ImagePreviewModal from "../ImagePreviewModal/ImagePreviewModal";
 import "./TaskEditModal.css";
-
-const MAX_IMAGES_PER_TASK = 4;
 
 function DeleteIcon() {
   return (
@@ -38,6 +47,8 @@ function createFormState(task) {
     existingImages: task?.images ?? [],
     newImages: [],
     imageMessage: "",
+    imageStatusMessage: "",
+    processingImages: false,
   };
 }
 
@@ -49,6 +60,7 @@ function TaskEditModal({
   onSuccess,
   onImageDeleted,
 }) {
+  const imageSelectionTokenRef = useRef(0);
   const [formData, setFormData] = useState(() => createFormState(task));
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -65,6 +77,7 @@ function TaskEditModal({
     setSubmitting(false);
     setDeletingImageIds([]);
     setPreviewImage(null);
+    imageSelectionTokenRef.current = 0;
   }, [isOpen, task]);
 
   const updateField = (field, value) => {
@@ -74,25 +87,60 @@ function TaskEditModal({
     }));
   };
 
-  const handleNewImagesChange = (fileList) => {
+  const handleNewImagesChange = async (fileList) => {
     const files = Array.from(fileList ?? []);
+    const validFiles = filterValidTaskImages(files);
+    const imageMessage = hasOversizedTaskImages(files)
+      ? TASK_IMAGE_SIZE_ERROR_MESSAGE
+      : validFiles.length >
+          Math.max(MAX_IMAGES_PER_TASK - formData.existingImages.length, 0)
+      ? `Jami ${MAX_IMAGES_PER_TASK} tagacha rasm bo'lishi mumkin.`
+      : "";
 
-    setFormData((currentData) => {
-      const remainingSlots = Math.max(
-        MAX_IMAGES_PER_TASK - currentData.existingImages.length,
-        0
-      );
-      const limitedFiles = files.slice(0, remainingSlots);
+    const remainingSlots = Math.max(
+      MAX_IMAGES_PER_TASK - formData.existingImages.length,
+      0
+    );
+    const limitedFiles = validFiles.slice(0, remainingSlots);
+    const selectionToken = imageSelectionTokenRef.current + 1;
+    imageSelectionTokenRef.current = selectionToken;
 
-      return {
+    if (limitedFiles.length === 0) {
+      setFormData((currentData) => ({
         ...currentData,
-        newImages: limitedFiles,
-        imageMessage:
-          files.length > remainingSlots
-            ? `Jami ${MAX_IMAGES_PER_TASK} tagacha rasm bo'lishi mumkin.`
-            : "",
-      };
-    });
+        newImages: [],
+        imageMessage,
+        imageStatusMessage: "",
+        processingImages: false,
+      }));
+
+      return;
+    }
+
+    setFormData((currentData) => ({
+      ...currentData,
+      newImages: [],
+      imageMessage: "",
+      imageStatusMessage: TASK_IMAGE_PROCESSING_MESSAGE,
+      processingImages: true,
+    }));
+
+    const { files: optimizedFiles, optimizedCount } = await optimizeTaskImages(
+      limitedFiles
+    );
+
+    if (imageSelectionTokenRef.current !== selectionToken) {
+      return;
+    }
+
+    setFormData((currentData) => ({
+      ...currentData,
+      newImages: optimizedFiles,
+      imageMessage,
+      imageStatusMessage:
+        optimizedCount > 0 ? TASK_IMAGE_READY_MESSAGE : "",
+      processingImages: false,
+    }));
   };
 
   const handleImageDelete = async (imageId) => {
@@ -131,6 +179,11 @@ function TaskEditModal({
     event.preventDefault();
 
     if (!task?.id) {
+      return;
+    }
+
+    if (formData.processingImages) {
+      setError(TASK_IMAGE_WAIT_MESSAGE);
       return;
     }
 
@@ -269,9 +322,21 @@ function TaskEditModal({
               accept="image/*"
               onChange={(event) => handleNewImagesChange(event.target.files)}
               disabled={
-                submitting || formData.existingImages.length >= MAX_IMAGES_PER_TASK
+                submitting ||
+                formData.processingImages ||
+                formData.existingImages.length >= MAX_IMAGES_PER_TASK
               }
             />
+
+            <div className="task-edit-upload-note mt-2">
+              {TASK_IMAGE_AUTO_OPTIMIZE_NOTE}
+            </div>
+
+            {formData.imageStatusMessage && (
+              <div className="task-edit-upload-note">
+                {formData.imageStatusMessage}
+              </div>
+            )}
 
             <div className="task-edit-upload-note mt-2">
               {formData.existingImages.length + formData.newImages.length} /{" "}
@@ -295,8 +360,16 @@ function TaskEditModal({
             Bekor qilish
           </Button>
 
-          <Button color="primary" type="submit" disabled={submitting}>
-            {submitting ? "Saqlanmoqda..." : "Saqlash"}
+          <Button
+            color="primary"
+            type="submit"
+            disabled={submitting || formData.processingImages}
+          >
+            {submitting
+              ? "Saqlanmoqda..."
+              : formData.processingImages
+              ? "Rasm tayyorlanmoqda..."
+              : "Saqlash"}
           </Button>
         </ModalFooter>
       </Form>

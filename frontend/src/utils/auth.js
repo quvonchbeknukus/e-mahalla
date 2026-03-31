@@ -356,6 +356,20 @@ export async function logoutUser() {
 
 export function getAuthErrorMessage(error) {
   if (error instanceof ApiError) {
+    const validationErrors = error.data?.errors;
+
+    if (validationErrors && typeof validationErrors === "object") {
+      const firstValidationMessage = Object.values(validationErrors)
+        .flat()
+        .find(
+          (message) => typeof message === "string" && message.trim() !== ""
+        );
+
+      if (firstValidationMessage) {
+        return firstValidationMessage;
+      }
+    }
+
     return error.message;
   }
 

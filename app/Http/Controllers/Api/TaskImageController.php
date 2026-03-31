@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\TaskImage;
 use App\Support\PublicImageService;
+use App\Support\TaskImageUpload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -77,7 +78,9 @@ class TaskImageController extends Controller
 
         return $request->validate([
             'task_id' => [$required, 'integer', Rule::exists('tasks', 'id')],
-            'image' => [$required, 'image', 'max:5120'],
+            'image' => [$required, 'image', 'max:'.TaskImageUpload::MAX_FILE_SIZE_KB],
+        ], [
+            'image.max' => TaskImageUpload::MAX_FILE_SIZE_MESSAGE,
         ]);
     }
 }

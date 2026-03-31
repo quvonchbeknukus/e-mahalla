@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Direction;
 use App\Models\Neighborhood;
 use App\Models\Task;
+use App\Support\TaskImageUpload;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -257,6 +258,48 @@ class ApiCrudTest extends TestCase
         $this->assertFileDoesNotExist(public_path($newPath));
     }
 
+    public function test_it_rejects_task_images_larger_than_ten_megabytes(): void
+    {
+        $direction = Direction::create([
+            'name' => 'Bandlik',
+        ]);
+
+        $neighborhood = Neighborhood::create([
+            'name' => 'Bogiston',
+            'crime_level' => 'past',
+            'lat' => 40.998,
+            'long' => 71.6726,
+            'neighborhood_chairman' => 'Jamshid Xolmatov',
+            'neighborhood_phone' => '998900000001',
+            'prevention_inspector' => 'Sardor Ahmedov',
+            'inspector_phone' => '998900000002',
+        ]);
+
+        $response = $this->withHeaders([
+            'Accept' => 'application/json',
+        ])->post('/api/tasks', [
+            'neighborhood_id' => $neighborhood->id,
+            'direction_id' => $direction->id,
+            'date' => '2026-03-12',
+            'text' => "Hududdagi muammo ro'yxatga olindi.",
+            'images' => [
+                $this->fakeOversizedImage('too-large.gif'),
+            ],
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('images.0');
+
+        $this->assertSame(
+            TaskImageUpload::MAX_FILE_SIZE_MESSAGE,
+            $response->json('errors')['images.0'][0]
+        );
+
+        $this->assertDatabaseCount('tasks', 0);
+        $this->assertDatabaseCount('task_images', 0);
+    }
+
     private function trackPath(?string $path): void
     {
         if ($path) {
@@ -269,6 +312,18 @@ class ApiCrudTest extends TestCase
         return UploadedFile::fake()->createWithContent(
             $name,
             base64_decode('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==')
+        );
+    }
+
+    private function fakeOversizedImage(string $name): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            str_pad(
+                base64_decode('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='),
+                (TaskImageUpload::MAX_FILE_SIZE_KB * 1024) + 1,
+                '0'
+            )
         );
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Direction;
 use App\Models\Neighborhood;
+use App\Support\TaskImageUpload;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -103,6 +104,39 @@ class TaskBulkStoreTest extends TestCase
         $this->assertDatabaseCount('task_images', 0);
     }
 
+    public function test_it_rejects_bulk_task_images_larger_than_ten_megabytes(): void
+    {
+        [$direction, $neighborhood] = $this->createDependencies();
+
+        $response = $this->withHeaders([
+            'Accept' => 'application/json',
+        ])->post('/api/tasks', [
+            'tasks' => [
+                [
+                    'neighborhood_id' => $neighborhood->id,
+                    'direction_id' => $direction->id,
+                    'date' => '2026-03-13',
+                    'text' => 'Katta rasm testi',
+                    'images' => [
+                        $this->fakeOversizedImage('too-large.gif'),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('tasks.0.images.0');
+
+        $this->assertSame(
+            TaskImageUpload::MAX_FILE_SIZE_MESSAGE,
+            $response->json('errors')['tasks.0.images.0'][0]
+        );
+
+        $this->assertDatabaseCount('tasks', 0);
+        $this->assertDatabaseCount('task_images', 0);
+    }
+
     private function createDependencies(): array
     {
         $direction = Direction::create([
@@ -135,6 +169,18 @@ class TaskBulkStoreTest extends TestCase
         return UploadedFile::fake()->createWithContent(
             $name,
             base64_decode('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==')
+        );
+    }
+
+    private function fakeOversizedImage(string $name): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            str_pad(
+                base64_decode('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='),
+                (TaskImageUpload::MAX_FILE_SIZE_KB * 1024) + 1,
+                '0'
+            )
         );
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Support\PublicImageService;
+use App\Support\TaskImageUpload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -135,10 +136,10 @@ class TaskController extends Controller
             'date' => [$required, 'date'],
             'text' => [$required, 'string'],
             'images' => ['sometimes', 'array', 'max:4'],
-            'images.*' => ['image', 'max:5120'],
+            'images.*' => ['image', 'max:'.TaskImageUpload::MAX_FILE_SIZE_KB],
             'removed_image_ids' => ['sometimes', 'array'],
             'removed_image_ids.*' => ['integer', Rule::exists('task_images', 'id')],
-        ]);
+        ], $this->validationMessages());
     }
 
     private function validatedBulkData(Request $request): array
@@ -150,8 +151,16 @@ class TaskController extends Controller
             'tasks.*.date' => ['required', 'date'],
             'tasks.*.text' => ['required', 'string'],
             'tasks.*.images' => ['sometimes', 'array', 'max:4'],
-            'tasks.*.images.*' => ['image', 'max:5120'],
-        ]);
+            'tasks.*.images.*' => ['image', 'max:'.TaskImageUpload::MAX_FILE_SIZE_KB],
+        ], $this->validationMessages());
+    }
+
+    private function validationMessages(): array
+    {
+        return [
+            'images.*.max' => TaskImageUpload::MAX_FILE_SIZE_MESSAGE,
+            'tasks.*.images.*.max' => TaskImageUpload::MAX_FILE_SIZE_MESSAGE,
+        ];
     }
 
     private function relations(): array
